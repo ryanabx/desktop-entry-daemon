@@ -13,7 +13,7 @@ struct Daemon {
 #[interface(name = "net.ryanabx.DesktopEntryDaemon")]
 impl Daemon {
     /// Register a desktop entry. Required is the `domain` name (e.g. com.ryanabx.TabletopEngine)
-    /// and the plaintext `entry`. Entries are cleared when the daemon exits.
+    /// and the plaintext `entry`. Entries are cleared when the daemon restarts.
     async fn register_entry(&self, domain: &str, entry: &str) -> String {
         let file_path = self.path.join(format!("{}.desktop", domain.to_string()));
         match File::create(file_path).await {
@@ -38,7 +38,9 @@ async fn set_up_environment() -> Daemon {
         })
         .expect("cannot find desktop-entry-daemon xdg data directory")
         .join(Path::new("applications"));
-    // Create the desktop-entry-daemon directory if it doesn't exist
+    // Clear old entries (won't error if it doesn't exist)
+    let _ = fs::remove_dir_all(app_dir.clone());
+    // Create the desktop-entry-daemon directory
     let _ = fs::create_dir_all(app_dir.clone())
         .await
         .expect("could not create directory");
