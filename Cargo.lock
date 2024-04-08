@@ -366,7 +366,6 @@ name = "desktop-entry-daemon"
 version = "0.1.0"
 dependencies = [
  "async-std",
- "tempfile",
  "xdg",
  "zbus",
 ]

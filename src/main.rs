@@ -10,7 +10,7 @@ struct Daemon {
     path: PathBuf,
 }
 
-#[interface(name = "org.ryanabx.DesktopEntryDaemon")]
+#[interface(name = "net.ryanabx.DesktopEntryDaemon")]
 impl Daemon {
     /// Register a desktop entry. Required is the `domain` name (e.g. com.ryanabx.TabletopEngine)
     /// and the plaintext `entry`. Entries are cleared when the daemon exits.
@@ -49,11 +49,11 @@ async fn main() -> ZbusResult<()> {
     // setup the server
     connection
         .object_server()
-        .at("/org/ryanabx/DesktopEntryDaemon", daemon)
+        .at("/net/ryanabx/DesktopEntryDaemon", daemon)
         .await?;
     // before requesting the name
     connection
-        .request_name("org.ryanabx.DesktopEntryDaemon")
+        .request_name("net.ryanabx.DesktopEntryDaemon")
         .await?;
 
     loop {

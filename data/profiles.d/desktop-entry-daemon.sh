@@ -1,6 +1,6 @@
-if command -v desktop-entry-ctl > /dev/null; then
+if command -v desktop-entry-ctl > /dev/null || [["$1" == "true"]]; then
     # set XDG_DATA_DIRS to include desktop-entry-daemon installations
-
+    echo "Setting XDG_DATA_DIRS for desktop-entry-daemon!"
     new_dirs=$(
         (
             unset G_MESSAGES_DEBUG
