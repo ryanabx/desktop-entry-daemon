@@ -26,17 +26,22 @@ impl Daemon {
     }
 }
 
-fn set_up_environment() -> Daemon {
+async fn set_up_environment() -> Daemon {
     let base_dir = BaseDirectories::new().expect("could not get XDG base directories");
     // Find the desktop-entry-daemon directory
     let app_dir = base_dir
         .get_data_dirs()
         .iter()
-        .find(|x| x.ends_with(Path::new("desktop-entry-daemon")))
+        .find(|x| {
+            println!("{:?}", x);
+            x.ends_with(Path::new("desktop-entry-daemon/share"))
+        })
         .expect("cannot find desktop-entry-daemon xdg data directory")
-        .join(Path::new("share/applications"));
+        .join(Path::new("applications"));
     // Create the desktop-entry-daemon directory if it doesn't exist
-    let _ = fs::create_dir(app_dir.clone());
+    let _ = fs::create_dir_all(app_dir.clone())
+        .await
+        .expect("could not create directory");
     Daemon {
         path: app_dir.clone().into(),
     }
@@ -44,7 +49,7 @@ fn set_up_environment() -> Daemon {
 
 #[async_std::main]
 async fn main() -> ZbusResult<()> {
-    let daemon = set_up_environment();
+    let daemon = set_up_environment().await;
     let connection = Connection::session().await?;
     // setup the server
     connection
