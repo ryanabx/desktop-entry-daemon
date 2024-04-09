@@ -26,6 +26,6 @@ install:
     install -Dm0644 {{service-src}} {{service-dst}}
 
 uninstall:
-    rm {{daemon-dst}}
-    rm {{data-dst}}
-    rm {{service-dst}}
+    rm -f {{daemon-dst}}
+    rm -f {{data-dst}}
+    rm -f {{service-dst}}
