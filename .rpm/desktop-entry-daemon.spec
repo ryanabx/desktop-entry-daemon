@@ -27,6 +27,7 @@ Source:         desktop-entry-daemon-0.1.0-vendor.tar.xz
 BuildRequires:  cargo-rpm-macros >= 26
 BuildRequires:  rustc
 BuildRequires:  cargo
+BuildRequires:  just
 
 BuildRequires:  systemd-rpm-macros
 
