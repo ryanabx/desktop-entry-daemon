@@ -17,7 +17,8 @@ data-dst := conf-dir / 'profiles.d' / 'desktop-entry-daemon.sh'
 service-src := 'data' / 'desktop-entry-daemon.service.in'
 service-dst := lib-dir / 'systemd' / 'user' / 'desktop-entry-daemon.service'
 
-build: cargo build-release
+build *args:
+    cargo build --release {{args}}
 
 install:
     install -Dm0755 {{daemon-src}} {{daemon-dst}}
