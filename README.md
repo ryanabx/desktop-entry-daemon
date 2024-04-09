@@ -1,6 +1,6 @@
-# desktop-entry-daemon
+# xdg-temp-daemon
 
-A daemon to manage transient (temporary) freedesktop desktop entries!
+A daemon to manage temporary XDG data!
 
 ### Projects that use this dbus service
 
@@ -13,7 +13,7 @@ A daemon to manage transient (temporary) freedesktop desktop entries!
 
 `just install`
 
-`systemctl enable desktop-entry-daemon`
+`systemctl enable xdg-temp-daemon`
 
 ### Uninstall
 

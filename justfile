@@ -1,4 +1,4 @@
-name := 'desktop-entry-daemon'
+name := 'xdg-temp-daemon'
 
 rootdir := ''
 prefix := '/usr'
@@ -11,11 +11,11 @@ lib-dir := '/lib'
 daemon-src := 'target' / 'release' / name
 daemon-dst := base-dir / 'libexec' / name
 
-data-src := 'data' / 'desktop-entry-daemon.profile.d.in'
-data-dst := conf-dir / 'profile.d' / 'desktop-entry-daemon.sh'
+data-src := 'data' / 'xdg-temp-daemon.profile.d.in'
+data-dst := conf-dir / 'profile.d' / 'xdg-temp-daemon.sh'
 
-service-src := 'data' / 'desktop-entry-daemon.service.in'
-service-dst := lib-dir / 'systemd' / 'user' / 'desktop-entry-daemon.service'
+service-src := 'data' / 'xdg-temp-daemon.service.in'
+service-dst := lib-dir / 'systemd' / 'user' / 'xdg-temp-daemon.service'
 
 build *args:
     cargo build --release {{args}}

@@ -1,9 +1,9 @@
-# set XDG_DATA_DIRS to include desktop-entry-daemon installations
-echo "Setting XDG_DATA_DIRS for desktop-entry-daemon!"
+# set XDG_DATA_DIRS to include xdg-temp-daemon installations
+echo "Setting XDG_DATA_DIRS for xdg-temp-daemon!"
 new_dirs=$(
     (
         unset G_MESSAGES_DEBUG
-        echo "${XDG_DATA_HOME:-"$HOME/.local/share"}/desktop-entry-daemon"
+        echo "${XDG_DATA_HOME:-"$HOME/.cache"}/xdg-temp-daemon"
     ) | (
         new_dirs=
         while read -r install_path

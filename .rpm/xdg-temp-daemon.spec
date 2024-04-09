@@ -4,25 +4,25 @@
 # prevent library files from being installed
 %global cargo_install_lib 0
 
-%global crate desktop-entry-daemon
+%global crate xdg-temp-daemon
 
 %global ver ###
 %global commit ###
 %global date ###
 
-Name:           desktop-entry-daemon
+Name:           xdg-temp-daemon
 Version:        %{ver}~%{date}
 Release:        %autorelease
-Summary:        A daemon for managing transient desktop entries
+Summary:        A daemon for managing temporary XDG data
 
 SourceLicense:  Apache-2.0
 # FIXME: paste output of %%cargo_license_summary here
 License:        # FIXME
 # LICENSE.dependencies contains a full license breakdown
 
-URL:            https://github.com/ryanabx/desktop-entry-daemon
-Source:         desktop-entry-daemon-0.1.0.tar.xz
-Source:         desktop-entry-daemon-0.1.0-vendor.tar.xz
+URL:            https://github.com/ryanabx/xdg-temp-daemon
+Source:         xdg-temp-daemon-%{ver}.tar.xz
+Source:         xdg-temp-daemon-%{ver}-vendor.tar.xz
 
 BuildRequires:  cargo-rpm-macros >= 26
 BuildRequires:  rustc
@@ -50,9 +50,9 @@ cat .vendor/config.toml >> .cargo/config
 %{cargo_vendor_manifest}
 
 %install
-install -Dm0755 target/release/desktop-entry-daemon %{buildroot}/%{_libexecdir}/desktop-entry-daemon
-install -Dm0644 data/desktop-entry-daemon.profile.d.in %{buildroot}/%{_sysconfdir}/profile.d/desktop-entry-daemon.sh
-install -Dm0644 data/desktop-entry-daemon.service.in %{buildroot}/%{_unitdir}/desktop-entry-daemon.service
+install -Dm0755 target/release/xdg-temp-daemon %{buildroot}/%{_libexecdir}/xdg-temp-daemon
+install -Dm0644 data/xdg-temp-daemon.profile.d.in %{buildroot}/%{_sysconfdir}/profile.d/xdg-temp-daemon.sh
+install -Dm0644 data/xdg-temp-daemon.service.in %{buildroot}/%{_unitdir}/xdg-temp-daemon.service
 
 %if %{with check}
 %check

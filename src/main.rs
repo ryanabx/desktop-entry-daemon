@@ -5,47 +5,48 @@ use async_std::{
 };
 use xdg::BaseDirectories;
 use zbus::{interface, Connection, Result as ZbusResult};
+use std::process::Command;
+
+mod utils;
 
 struct Daemon {
-    path: PathBuf,
+    data_dir: PathBuf,
+    files: Vec<tempfile::NamedTempFile>
 }
 
-#[interface(name = "net.ryanabx.DesktopEntryDaemon")]
+#[interface(name = "net.ryanabx.XDGTempDaemon")]
 impl Daemon {
-    /// Register a desktop entry. Required is the `domain` name (e.g. com.ryanabx.TabletopEngine)
-    /// and the plaintext `entry`. Entries are cleared when the daemon restarts.
-    async fn register_entry(&self, domain: &str, entry: &str) -> String {
-        let file_path = self.path.join(format!("{}.desktop", domain.to_string()));
-        match File::create(file_path).await {
-            Ok(mut x) => match x.write(entry.as_bytes()).await {
-                Ok(_) => domain.to_string(),
-                Err(_) => "".into(),
-            },
-            Err(_) => "".into(),
-        }
+    /// Register temporary XDG data. Requires the `path` to the data directory to copy.
+    /// The data can include desktop entries, icons, etc.
+    /// Entries are cleared when the daemon restarts
+    async fn temp_data(&self, path: &str) -> bool {
+        let data_path = Path::new(path);
+
+
+        true
     }
 }
 
 async fn set_up_environment() -> Daemon {
     let base_dir = BaseDirectories::new().expect("could not get XDG base directories");
-    // Find the desktop-entry-daemon directory
+    // Find the xdg-temp-daemon directory
     let app_dir = base_dir
         .get_data_dirs()
         .iter()
         .find(|x| {
             println!("{:?}", x);
-            x.ends_with(Path::new("desktop-entry-daemon/share"))
+            x.ends_with(Path::new("xdg-temp-daemon/share"))
         })
-        .expect("cannot find desktop-entry-daemon xdg data directory")
-        .join(Path::new("applications"));
+        .expect("cannot find xdg-temp-daemon xdg data directory");
     // Clear old entries (won't error if it doesn't exist)
     let _ = fs::remove_dir_all(app_dir.clone());
-    // Create the desktop-entry-daemon directory
+    // Create the xdg-temp-daemon directory
     let _ = fs::create_dir_all(app_dir.clone())
         .await
         .expect("could not create directory");
     Daemon {
-        path: app_dir.clone().into(),
+        data_dir: app_dir.clone().into(),
+        files: Vec::new()
     }
 }
 
@@ -56,11 +57,11 @@ async fn main() -> ZbusResult<()> {
     // setup the server
     connection
         .object_server()
-        .at("/net/ryanabx/DesktopEntryDaemon", daemon)
+        .at("/net/ryanabx/XDGTempDaemon", daemon)
         .await?;
     // before requesting the name
     connection
-        .request_name("net.ryanabx.DesktopEntryDaemon")
+        .request_name("net.ryanabx.XDGTempDaemon")
         .await?;
 
     loop {

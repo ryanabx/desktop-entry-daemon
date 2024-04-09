@@ -1,11 +1,11 @@
 [Unit]
-Description=Desktop Entry daemon
+Description=XDG Temp daemon
 Before=multi-user.target display-manager.target
 
 [Service]
 Type=dbus
-BusName=net.ryanabx.DesktopEntryDaemon
-ExecStart=@libexecdir@/desktop-entry-daemon
+BusName=net.ryanabx.XDGTempDaemon
+ExecStart=@libexecdir@/xdg-temp-daemon
 Restart=on-failure
 
 [Install]
