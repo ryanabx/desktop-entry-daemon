@@ -1,5 +1,4 @@
 name := 'desktop-entry-daemon'
-tool-name := 'desktop-entry-ctl'
 
 rootdir := ''
 prefix := '/usr'
@@ -7,24 +6,25 @@ prefix := '/usr'
 base-dir := absolute_path(clean(rootdir / prefix))
 
 conf-dir := '/etc'
-
-tool-src := 'target' / 'release' / tool-name
-tool-dst := base-dir / 'bin' / tool-name
+lib-dir := '/lib'
 
 daemon-src := 'target' / 'release' / name
 daemon-dst := base-dir / 'libexec' / name
 
-data-src := 'data' / 'profiles.d' / 'desktop-entry-daemon.sh'
+data-src := 'data' / 'desktop-entry-daemon.profiles.d.in'
 data-dst := conf-dir / 'profiles.d' / 'desktop-entry-daemon.sh'
 
-# Installs files
-install:
-    install -Dm0755 {{tool-src}} {{tool-dst}}
-    install -Dm0755 {{daemon-src}} {{daemon-dst}}
-    install -Dm0755 {{data-src}} {{data-dst}}
+service-src := 'data' / 'desktop-entry-daemon.service.in'
+service-dst := lib-dir / 'systemd' / 'user' / 'desktop-entry-daemon.service'
 
-# Uninstalls installed files
+build: cargo build-release
+
+install:
+    install -Dm0755 {{daemon-src}} {{daemon-dst}}
+    install -Dm0644 {{data-src}} {{data-dst}}
+    install -Dm0644 {{service-src}} {{service-dst}}
+
 uninstall:
-    rm {{tool-dst}}
     rm {{daemon-dst}}
     rm {{data-dst}}
+    rm {{service-dst}}

@@ -1,0 +1,12 @@
+[Unit]
+Description=Desktop Entry daemon
+Before=multi-user.target display-manager.target
+
+[Service]
+Type=dbus
+BusName=net.ryanabx.DesktopEntryDaemon
+ExecStart=@libexecdir@/desktop-entry-daemon
+Restart=on-failure
+
+[Install]
+WantedBy=graphical.target
