@@ -50,10 +50,12 @@ cat .vendor/config.toml >> .cargo/config
 %{cargo_vendor_manifest}
 
 %install
-install -Dm0755 target/release/xdg-temp-daemon %{buildroot}/%{_libexecdir}/xdg-temp-daemon
-install -Dm0644 data/xdg-temp-daemon.profile.d.in %{buildroot}/%{_sysconfdir}/profile.d/xdg-temp-daemon.sh
-install -Dm0644 data/xdg-temp-daemon.service.in %{buildroot}/%{_userunitdir}/xdg-temp-daemon.service
-install -Dm0644 data/xdg-temp-daemon-clean.service.in %{buildroot}/%{_userunitdir}/xdg-temp-daemon-clean.service
+install -Dm0755 target/release/xdg-temp-daemon %{buildroot}/%{_bindir}/xdg-temp-daemon
+install -Dm0644 profile/xdg-temp-daemon.sh %{buildroot}/%{_sysconfdir}/profile.d/xdg-temp-daemon.sh
+install -Dm0644 systemd/xdg-temp-daemon.service %{buildroot}/%{_userunitdir}/xdg-temp-daemon.service
+install -Dm0644 systemd/xdg-temp-daemon-clean.service %{buildroot}/%{_userunitdir}/xdg-temp-daemon-clean.service
+install -Dm0644 env.d/61-xdg-temp-daemon %{buildroot}/lib/systemd/user-environment-generators/61-xdg-temp-daemon
+
 
 %if %{with check}
 %check
@@ -77,7 +79,7 @@ install -Dm0644 data/xdg-temp-daemon-clean.service.in %{buildroot}/%{_userunitdi
 %license LICENSE.dependencies
 # %%license cargo-vendor.txt
 %doc README.md
-%{_libexecdir}/%{name}
+%{_bindir}/%{name}
 %{_userunitdir}/%{name}.service
 %{_userunitdir}/%{name}-clean.service
 %{_sysconfdir}/profile.d/%{name}.sh

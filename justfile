@@ -9,7 +9,7 @@ conf-dir := '/etc'
 lib-dir := '/lib'
 
 daemon-src := 'target' / 'release' / name
-daemon-dst := base-dir / 'libexec' / name
+daemon-dst := base-dir / 'bin' / name
 
 data-src := 'data' / 'xdg-temp-daemon.profile.d.in'
 data-dst := conf-dir / 'profile.d' / 'xdg-temp-daemon.sh'

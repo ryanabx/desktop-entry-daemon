@@ -78,7 +78,10 @@ fn get_data_dir() -> PathBuf {
     // Find the xdg-temp-daemon directory
     let app_dir = data_dirs
         .iter()
-        .find(|x| x.ends_with(Path::new(".cache/xdg-temp-daemon/share/")))
+        .find(|x| {
+            println!("{}", x.display());
+            x.ends_with(Path::new(".cache/xdg-temp-daemon/share/"))
+        })
         .expect("cannot find xdg-temp-daemon xdg data directory");
     // Clear old entries (won't error if it doesn't exist)
     let _ = fs::remove_dir_all(app_dir.clone());
