@@ -54,7 +54,6 @@ install -Dm0755 target/release/xdg-temp-daemon %{buildroot}/%{_bindir}/xdg-temp-
 install -Dm0644 profile/xdg-temp-daemon.sh %{buildroot}/%{_sysconfdir}/profile.d/xdg-temp-daemon.sh
 install -Dm0644 systemd/xdg-temp-daemon.service %{buildroot}/%{_userunitdir}/xdg-temp-daemon.service
 install -Dm0644 systemd/xdg-temp-daemon-clean.service %{buildroot}/%{_userunitdir}/xdg-temp-daemon-clean.service
-install -Dm0644 env.d/61-xdg-temp-daemon %{buildroot}/lib/systemd/user-environment-generators/61-xdg-temp-daemon
 
 
 %if %{with check}
@@ -83,7 +82,6 @@ install -Dm0644 env.d/61-xdg-temp-daemon %{buildroot}/lib/systemd/user-environme
 %{_userunitdir}/%{name}.service
 %{_userunitdir}/%{name}-clean.service
 %{_sysconfdir}/profile.d/%{name}.sh
-/lib/systemd/user-environment-generators/61-%{name}
 
 %changelog
 %autochangelog

@@ -1,2 +1,0 @@
-#!/bin/sh
-exec XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.cache/xdg-temp-daemon/share
