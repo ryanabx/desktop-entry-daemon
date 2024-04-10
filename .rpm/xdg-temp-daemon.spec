@@ -83,6 +83,7 @@ install -Dm0644 env.d/61-xdg-temp-daemon %{buildroot}/lib/systemd/user-environme
 %{_userunitdir}/%{name}.service
 %{_userunitdir}/%{name}-clean.service
 %{_sysconfdir}/profile.d/%{name}.sh
+/lib/systemd/user-environment-generators/61-%{name}
 
 %changelog
 %autochangelog
