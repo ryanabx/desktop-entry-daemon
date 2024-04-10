@@ -83,7 +83,7 @@ fn get_data_dir() -> PathBuf {
     // Clear old entries (won't error if it doesn't exist)
     let _ = fs::remove_dir_all(app_dir.clone());
     // Create the xdg-temp-daemon directory
-    let _ = fs::create_dir_all(app_dir.clone()).expect("could not create directory");
+    let _ = fs::create_dir_all(app_dir.clone());
     app_dir.to_owned()
 }
 

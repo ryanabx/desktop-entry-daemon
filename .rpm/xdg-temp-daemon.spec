@@ -52,7 +52,7 @@ cat .vendor/config.toml >> .cargo/config
 %install
 install -Dm0755 target/release/xdg-temp-daemon %{buildroot}/%{_libexecdir}/xdg-temp-daemon
 install -Dm0644 data/xdg-temp-daemon.profile.d.in %{buildroot}/%{_sysconfdir}/profile.d/xdg-temp-daemon.sh
-install -Dm0644 data/xdg-temp-daemon.service.in %{buildroot}/%{_unitdir}/xdg-temp-daemon.service
+install -Dm0644 data/xdg-temp-daemon.service.in %{buildroot}/%{_userunitdir}/xdg-temp-daemon.service
 
 %if %{with check}
 %check
@@ -74,7 +74,7 @@ install -Dm0644 data/xdg-temp-daemon.service.in %{buildroot}/%{_unitdir}/xdg-tem
 # %%license cargo-vendor.txt
 %doc README.md
 %{_libexecdir}/%{name}
-%{_unitdir}/%{name}.service
+%{_userunitdir}/%{name}.service
 %{_sysconfdir}/profile.d/%{name}.sh
 
 %changelog
