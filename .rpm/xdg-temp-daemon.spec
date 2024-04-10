@@ -53,6 +53,7 @@ cat .vendor/config.toml >> .cargo/config
 install -Dm0755 target/release/xdg-temp-daemon %{buildroot}/%{_libexecdir}/xdg-temp-daemon
 install -Dm0644 data/xdg-temp-daemon.profile.d.in %{buildroot}/%{_sysconfdir}/profile.d/xdg-temp-daemon.sh
 install -Dm0644 data/xdg-temp-daemon.service.in %{buildroot}/%{_userunitdir}/xdg-temp-daemon.service
+install -Dm0644 data/xdg-temp-daemon-clean.service.in %{buildroot}/%{_userunitdir}/xdg-temp-daemon-clean.service
 
 %if %{with check}
 %check
@@ -61,12 +62,15 @@ install -Dm0644 data/xdg-temp-daemon.service.in %{buildroot}/%{_userunitdir}/xdg
 
 %post
 %systemd_post %{name}.service
+%systemd_post %{name}-clean.service
 
 %preun
 %systemd_preun %{name}.service
+%systemd_preun %{name}-clean.service
 
 %postun
 %systemd_postun_with_restart %{name}.service
+%systemd_postun_with_restart %{name}-clean.service
 
 %files
 %license LICENSE
@@ -75,6 +79,7 @@ install -Dm0644 data/xdg-temp-daemon.service.in %{buildroot}/%{_userunitdir}/xdg
 %doc README.md
 %{_libexecdir}/%{name}
 %{_userunitdir}/%{name}.service
+%{_userunitdir}/%{name}-clean.service
 %{_sysconfdir}/profile.d/%{name}.sh
 
 %changelog

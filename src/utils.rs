@@ -93,3 +93,7 @@ pub fn set_up_environment() -> Daemon {
         data_dir: data_dir.clone().into(),
     }
 }
+
+pub fn clean_environment() {
+    let _ = get_data_dir();
+}

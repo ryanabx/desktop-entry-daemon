@@ -1,9 +1,14 @@
 [Unit]
 Description=XDG Temp daemon
-PartOf=graphical-session.target
+PartOf=graphical-session-pre.target
+Before=graphical-session.target
 
 [Service]
 BusName=net.ryanabx.XDGTempDaemon
-ExecStart=/usr/libexec/xdg-temp-daemon
+ExecStart=/usr/libexec/xdg-temp-daemon --user
 Type=dbus
 Slice=session.slice
+
+[Install]
+WantedBy=graphical-session-pre.target
+Alias=dbus-net.ryanabx.XDGTempDaemon.service

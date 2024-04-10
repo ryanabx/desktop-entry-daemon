@@ -1,0 +1,12 @@
+[Unit]
+Description=XDG Temp daemon cleaning service
+DefaultDependencies=no
+Conflicts=shutdown.target
+Before=basic.target shutdown.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/xdg-temp-daemon --clean
+SuccessExitStatus=DATAERR
+IOSchedulingClass=idle
+Slice=background.slice

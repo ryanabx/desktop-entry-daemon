@@ -1,7 +1,17 @@
 use async_std::path::{Path, PathBuf};
+use clap::Parser;
 use zbus::{interface, Connection, Result as ZbusResult};
 
 mod utils;
+
+/// program to manage temporary XDG data
+#[derive(Parser, Debug)]
+#[command(version, about)]
+struct Args {
+    /// clear all temporary XDG data
+    #[arg(short, long, action = clap::ArgAction::SetTrue)]
+    clean: bool,
+}
 
 struct Daemon {
     data_dir: PathBuf,
@@ -35,6 +45,13 @@ impl Daemon {
 #[async_std::main]
 async fn main() -> ZbusResult<()> {
     env_logger::init();
+    let args = Args::parse();
+    if args.clean {
+        // clean space
+        utils::clean_environment();
+        return Ok(());
+    }
+    // start daemon
     let daemon = utils::set_up_environment();
     let connection = Connection::session().await?;
     // setup the server
