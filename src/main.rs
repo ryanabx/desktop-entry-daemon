@@ -19,6 +19,7 @@ impl Daemon {
     /// The data can include desktop entries, icons, etc.
     /// Entries are cleared when the daemon restarts
     async fn temp_data(&self, path: &str) -> bool {
+        dbg!(path);
         let data_path = Path::new(path);
         if data_path.exists().await {
             // TODO: validation of input
@@ -26,17 +27,20 @@ impl Daemon {
                 Ok(_) => {
                     return true;
                 }
-                Err(_) => {
+                Err(E) => {
+                    println!("Error occurred: {:?}", E);
                     return false;
                 }
             }
         }
+        println!("path {:?} does not exist", data_path);
         false
     }
 }
 
 #[async_std::main]
 async fn main() -> ZbusResult<()> {
+    env_logger::init();
     let daemon = utils::set_up_environment();
     let connection = Connection::session().await?;
     // setup the server

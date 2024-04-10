@@ -1,5 +1,7 @@
+use log::{self, log_enabled};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use xdg::BaseDirectories;
 
@@ -12,8 +14,21 @@ pub fn copy<U: AsRef<Path>, V: AsRef<Path>>(from: U, to: V) -> Result<(), std::i
     let output_root = PathBuf::from(to.as_ref());
     let input_root = PathBuf::from(from.as_ref()).components().count();
 
+    if log_enabled!(log::Level::Trace) {
+        let output = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(format!(
+                "tree {}",
+                PathBuf::from(from.as_ref()).to_str().unwrap_or("")
+            ))
+            .output();
+        if let Ok(o) = output {
+            log::trace!("Tree: {}", String::from_utf8(o.stdout).unwrap_or_default());
+        }
+    }
+
     while let Some(working_path) = stack.pop() {
-        println!("process: {:?}", &working_path);
+        log::trace!("process: {:?}", &working_path);
 
         // Generate a relative path
         let src: PathBuf = working_path.components().skip(input_root).collect();
@@ -25,7 +40,7 @@ pub fn copy<U: AsRef<Path>, V: AsRef<Path>>(from: U, to: V) -> Result<(), std::i
             output_root.join(&src)
         };
         if fs::metadata(&dest).is_err() {
-            println!(" mkdir: {:?}", dest);
+            log::warn!(" mkdir: {:?}", dest);
             fs::create_dir_all(&dest)?;
         }
 
@@ -38,11 +53,13 @@ pub fn copy<U: AsRef<Path>, V: AsRef<Path>>(from: U, to: V) -> Result<(), std::i
                 match path.file_name() {
                     Some(filename) => {
                         let dest_path = dest.join(filename);
-                        println!("  copy: {:?} -> {:?}", &path, &dest_path);
-                        fs::copy(&path, &dest_path)?;
+                        log::trace!("  copy: {:?} -> {:?}", &path, &dest_path);
+                        if let Err(_) = fs::copy(&path, &dest_path) {
+                            log::warn!("skipping {} as the file was not found", &path.display());
+                        }
                     }
                     None => {
-                        println!("failed: {:?}", path);
+                        log::warn!("failed: {:?}", path);
                     }
                 }
             }
@@ -85,9 +102,7 @@ fn get_data_dir() -> PathBuf {
     // Find the xdg-temp-daemon directory
     let app_dir = data_dirs
         .iter()
-        .find(|x| {
-            x.ends_with(Path::new(".cache/xdg-temp-daemon/share/"))
-        })
+        .find(|x| x.ends_with(Path::new(".cache/xdg-temp-daemon/share/")))
         .expect("cannot find xdg-temp-daemon xdg data directory");
     // Clear old entries (won't error if it doesn't exist)
     let _ = fs::remove_dir_all(app_dir.clone());
