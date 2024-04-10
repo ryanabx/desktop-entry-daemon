@@ -1,7 +1,6 @@
 use log::{self, log_enabled};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 use xdg::BaseDirectories;
 
@@ -69,34 +68,11 @@ pub fn copy<U: AsRef<Path>, V: AsRef<Path>>(from: U, to: V) -> Result<(), std::i
     Ok(())
 }
 
-pub fn validate_data<U: AsRef<Path>>(from: U) -> bool {
-    true // TODO: Data validation
-}
-
-fn add_path_to_env_if_not_exists(variable: String, val: String) {
-    let v = std::env::var(&variable).unwrap_or("".to_string());
-    if !v.split(":").any(|x| Path::new(x) == Path::new(&val)) {
-        println!("Adding variable");
-        std::process::Command::new("sh")
-            .arg("-c")
-            .arg(format!(
-                "export XDG_DATA_DIRS && XDG_DATA_DIRS=\"$XDG_DATA_DIRS:{}\"",
-                val
-            ))
-            .output()
-            .expect("could not run command");
-        std::env::set_var(&variable, format!("{}:{}", v, &val));
-        println!("{}", std::env::var(&variable).unwrap_or("".to_string()));
-    }
-}
+// pub fn validate_data<U: AsRef<Path>>(from: U) -> bool {
+//     true // TODO: Data validation
+// }
 
 fn get_data_dir() -> PathBuf {
-    if let Ok(home) = std::env::var("HOME") {
-        let mut path = PathBuf::new();
-        path.push(&home);
-        path.push(".cache/xdg-temp-daemon/share/");
-        add_path_to_env_if_not_exists("XDG_DATA_DIRS".to_string(), path.to_str().unwrap().into());
-    }
     let base_dir = BaseDirectories::new().expect("could not get XDG base directories");
     let data_dirs = base_dir.get_data_dirs();
     // Find the xdg-temp-daemon directory

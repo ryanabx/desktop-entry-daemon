@@ -27,13 +27,13 @@ impl Daemon {
                 Ok(_) => {
                     return true;
                 }
-                Err(E) => {
-                    println!("Error occurred: {:?}", E);
+                Err(ex) => {
+                    log::error!("Error occurred: {:?}", ex);
                     return false;
                 }
             }
         }
-        println!("path {:?} does not exist", data_path);
+        log::warn!("path {:?} does not exist", data_path);
         false
     }
 }

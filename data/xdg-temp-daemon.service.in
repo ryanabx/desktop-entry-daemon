@@ -5,7 +5,7 @@ Before=multi-user.target display-manager.target
 [Service]
 Type=dbus
 BusName=net.ryanabx.XDGTempDaemon
-ExecStart=@libexecdir@/xdg-temp-daemon
+ExecStart=/usr/libexec/xdg-temp-daemon
 Restart=on-failure
 
 [Install]
