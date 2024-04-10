@@ -5,7 +5,7 @@ Before=graphical-session.target
 
 [Service]
 BusName=net.ryanabx.XDGTempDaemon
-ExecStart=/usr/libexec/xdg-temp-daemon --user
+ExecStart=/usr/libexec/xdg-temp-daemon
 Type=dbus
 Slice=session.slice
 
