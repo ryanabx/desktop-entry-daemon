@@ -1,6 +1,6 @@
 use log::{self, log_enabled};
-use std::fs;
 use std::path::{Path, PathBuf};
+use std::{env, fs};
 
 use xdg::BaseDirectories;
 
@@ -74,15 +74,13 @@ pub fn copy<U: AsRef<Path>, V: AsRef<Path>>(from: U, to: V) -> Result<(), std::i
 
 fn get_data_dir() -> PathBuf {
     let base_dir = BaseDirectories::new().expect("could not get XDG base directories");
-    let data_dirs = base_dir.get_data_dirs();
-    // Find the xdg-temp-daemon directory
-    let app_dir = data_dirs
-        .iter()
-        .find(|x| {
-            println!("{}", x.display());
-            x.ends_with(Path::new(".cache/xdg-temp-daemon/share/"))
-        })
-        .expect("cannot find xdg-temp-daemon xdg data directory");
+
+    let home = env::var("HOME").expect("can't find home environment variable!");
+
+    let mut app_dir = PathBuf::new();
+    app_dir.push(home);
+    app_dir.push(".cache/xdg-temp-daemon/share/");
+
     // Clear old entries (won't error if it doesn't exist)
     let _ = fs::remove_dir_all(app_dir.clone());
     // Create the xdg-temp-daemon directory
