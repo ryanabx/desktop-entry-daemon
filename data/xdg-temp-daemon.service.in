@@ -1,12 +1,9 @@
 [Unit]
 Description=XDG Temp daemon
-Before=multi-user.target display-manager.target
+PartOf=graphical-session.target
 
 [Service]
-Type=dbus
 BusName=net.ryanabx.XDGTempDaemon
 ExecStart=/usr/libexec/xdg-temp-daemon
-Restart=on-failure
-
-[Install]
-WantedBy=graphical.target
+Type=dbus
+Slice=session.slice
