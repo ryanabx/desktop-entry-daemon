@@ -1,10 +1,4 @@
-use async_std::{
-    fs::{self, File},
-    io::WriteExt,
-    path::{Path, PathBuf},
-};
-use std::process::Command;
-use xdg::BaseDirectories;
+use async_std::path::{Path, PathBuf};
 use zbus::{interface, Connection, Result as ZbusResult};
 
 mod utils;
