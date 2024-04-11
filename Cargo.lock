@@ -456,6 +456,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "desktop-entry-daemon"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "clap",
+ "env_logger",
+ "log",
+ "tempfile",
+ "xdg",
+ "zbus",
+]
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1502,19 +1515,6 @@ checksum = "21e5a325c3cb8398ad6cf859c1135b25dd29e186679cf2da7581d9679f63b38e"
 dependencies = [
  "libc",
  "winapi",
-]
-
-[[package]]
-name = "xdg-temp-daemon"
-version = "0.1.0"
-dependencies = [
- "async-std",
- "clap",
- "env_logger",
- "log",
- "tempfile",
- "xdg",
- "zbus",
 ]
 
 [[package]]

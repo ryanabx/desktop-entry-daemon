@@ -3,11 +3,11 @@ Description=XDG Temp daemon
 PartOf=graphical-session.target
 
 [Service]
-BusName=net.ryanabx.XDGTempDaemon
-ExecStart=xdg-temp-daemon
+BusName=net.ryanabx.DesktopEntry
+ExecStart=desktop-entry-daemon
 Type=dbus
 Slice=session.slice
 
 [Install]
 WantedBy=graphical-session.target
-Alias=dbus-net.ryanabx.XDGTempDaemon.service
+Alias=dbus-net.ryanabx.DesktopEntry.service

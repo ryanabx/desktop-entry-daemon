@@ -38,7 +38,7 @@
       <arg type="s" direction="out"/>
     </method>
   </interface>
-  <interface name="net.ryanabx.XDGTempDaemon">
+  <interface name="net.ryanabx.DesktopEntry">
     <!--
      Register XDG data. Requires the `path` to the data directory to copy.
      The data can include desktop entries, icons, etc.

@@ -6,7 +6,7 @@ Before=basic.target shutdown.target
 
 [Service]
 Type=oneshot
-ExecStart=xdg-temp-daemon --clean
+ExecStart=desktop-entry-daemon --clean
 SuccessExitStatus=DATAERR
 IOSchedulingClass=idle
 Slice=background.slice

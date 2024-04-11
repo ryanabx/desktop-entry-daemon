@@ -79,11 +79,11 @@ fn get_data_dir() -> PathBuf {
 
     let mut app_dir = PathBuf::new();
     app_dir.push(home);
-    app_dir.push(".cache/xdg-temp-daemon/share/");
+    app_dir.push(".cache/desktop-entry-daemon/share/");
 
     // Clear old entries (won't error if it doesn't exist)
     let _ = fs::remove_dir_all(app_dir.clone());
-    // Create the xdg-temp-daemon directory
+    // Create the desktop-entry-daemon directory
     let _ = fs::create_dir_all(app_dir.clone());
     app_dir.to_owned()
 }

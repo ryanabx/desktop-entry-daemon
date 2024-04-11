@@ -4,11 +4,11 @@ use zbus::{interface, Connection, Result as ZbusResult};
 
 mod utils;
 
-/// program to manage temporary XDG data
+/// program to manage temporary desktop entries
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
-    /// clear all temporary XDG data
+    /// clear all temporary desktop entries
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
     clean: bool,
 }
@@ -17,7 +17,7 @@ struct Daemon {
     data_dir: PathBuf,
 }
 
-#[interface(name = "net.ryanabx.XDGTempDaemon")]
+#[interface(name = "net.ryanabx.DesktopEntry")]
 impl Daemon {
     /// Register XDG data. Requires the `path` to the data directory to copy.
     /// The data can include desktop entries, icons, etc.
@@ -57,10 +57,10 @@ async fn main() -> ZbusResult<()> {
     // setup the server
     connection
         .object_server()
-        .at("/net/ryanabx/XDGTempDaemon", daemon)
+        .at("/net/ryanabx/DesktopEntry", daemon)
         .await?;
     // before requesting the name
-    connection.request_name("net.ryanabx.XDGTempDaemon").await?;
+    connection.request_name("net.ryanabx.DesktopEntry").await?;
 
     loop {
         // do something else, wait forever or timeout here:
