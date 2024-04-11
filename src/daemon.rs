@@ -12,11 +12,11 @@ pub struct Daemon {
 
 #[interface(name = "net.ryanabx.DesktopEntry")]
 impl Daemon {
-    /// register desktop application entries. each entry should be encoded in a string in the list, and
+    /// register desktop application entries. each entry path should be encoded in a string in the list, and
     /// should follow the [desktop entry spec](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
-    async fn register_entries(&self, entries: Vec<String>) -> bool {
+    async fn register_entries(&self, entry_paths: Vec<String>) -> bool {
         let mut success = true;
-        let modified_entries = entries
+        let modified_entries = entry_paths
             .iter()
             .map(|entry| {
                 validate_desktop_entry(entry.clone()).unwrap_or_else(|| {

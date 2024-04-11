@@ -36,7 +36,7 @@ fn run_desktop_file_validate(entry_path: String) -> Option<bool> {
         .output()
     {
         Ok(output) => {
-            println!("{}", String::from_utf8(output.stdout).unwrap());
+            println!("Output: '{}'", String::from_utf8(output.stdout).unwrap());
             Some(true)
         }
         Err(_) => None,
