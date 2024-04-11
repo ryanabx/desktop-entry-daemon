@@ -1,0 +1,76 @@
+
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="net.ryanabx.DesktopEntry">
+    <!--
+     register desktop application entries. each entry path should be encoded in a string in the list, and
+     should follow the [desktop entry spec](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
+     -->
+    <method name="RegisterEntries">
+      <arg name="entry_paths" type="as" direction="in"/>
+      <arg type="b" direction="out"/>
+    </method>
+    <!--
+     register icons for applications. each icon must follow the
+     [icon theme spec](https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html)
+     -->
+    <method name="RegisterIcons">
+      <arg name="icon_paths" type="as" direction="in"/>
+      <arg type="b" direction="out"/>
+    </method>
+    <!--
+     remove desktop application entries. use the app_id to reference the entry
+     to delete from the desktop-entry-daemon data directory
+     -->
+    <method name="RemoveEntries">
+      <arg name="entry_names" type="as" direction="in"/>
+      <arg type="b" direction="out"/>
+    </method>
+    <!--
+     remove icons. use the icon name to reference the entry
+     to delete from the desktop-entry-daemon data directory
+     -->
+    <method name="RemoveIcons">
+      <arg name="icon_names" type="as" direction="in"/>
+      <arg type="b" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg type="v" direction="out"/>
+    </method>
+    <method name="Set">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="in"/>
+    </method>
+    <method name="GetAll">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg type="a{sv}" direction="out"/>
+    </method>
+    <!--
+     Emits the `org.freedesktop.DBus.Properties.PropertiesChanged` signal.
+     -->
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+  </interface>
+  <interface name="org.freedesktop.DBus.Peer">
+    <method name="Ping">
+    </method>
+    <method name="GetMachineId">
+      <arg type="s" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg type="s" direction="out"/>
+    </method>
+  </interface>
+</node>
+
