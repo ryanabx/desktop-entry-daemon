@@ -4,7 +4,7 @@ PartOf=graphical-session.target
 
 [Service]
 BusName=net.ryanabx.DesktopEntry
-Environment="RUST_LOG=info"
+Environment="RUST_LOG=debug"
 ExecStart=desktop-entry-daemon
 Type=dbus
 Slice=session.slice

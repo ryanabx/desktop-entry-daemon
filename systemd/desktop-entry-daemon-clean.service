@@ -6,7 +6,7 @@ Before=basic.target shutdown.target
 
 [Service]
 Type=oneshot
-Environment="RUST_LOG=info"
+Environment="RUST_LOG=debug"
 ExecStart=desktop-entry-daemon --clean
 SuccessExitStatus=DATAERR
 IOSchedulingClass=idle
