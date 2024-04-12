@@ -12,5 +12,6 @@ pub fn get_data_dir(clean: bool) -> PathBuf {
         // Create the desktop-entry-daemon directory
         let _ = fs::create_dir_all(app_dir.clone());
     }
+    log::debug!("Got data dir: {:?}", app_dir);
     app_dir.to_owned()
 }

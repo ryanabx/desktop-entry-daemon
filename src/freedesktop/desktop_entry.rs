@@ -7,8 +7,10 @@ pub fn validate_desktop_entry(entry_path: &str) -> Option<(String, String)> {
     let entry = Path::new(entry_path);
     // Make sure path exists
     if !entry.exists() {
+        log::warn!("Warning: Path doesn't exist {}", entry_path);
         return None;
     } else if let Some(false) | None = run_desktop_file_validate(entry.to_str().unwrap()) {
+        log::warn!("Warning: Desktop file failed validation");
         return None;
     }
     // TODO: Extra validation (strip exec, etc...)
@@ -22,8 +24,10 @@ pub fn validate_desktop_entry(entry_path: &str) -> Option<(String, String)> {
             .to_string(),
     );
     if entry_text.is_empty() || app_id.is_empty() {
+        log::warn!("Warning: One is empty: ('{}', '{}')", entry_text, app_id);
         None
     } else {
+        log::debug!("({}, {})", entry_text, app_id);
         Some((entry_text, app_id))
     }
 }
