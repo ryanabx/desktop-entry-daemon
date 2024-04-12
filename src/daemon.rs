@@ -57,7 +57,12 @@ impl Daemon {
         let mut successful_icons = Vec::new();
         for (icon_path, subpath) in Iterator::zip(icon_paths.iter(), subpaths.iter()) {
             let src_path = Path::new(icon_path);
-            let dst_dir = self.data_dir.as_path().join(subpath);
+            let dst_dir = self
+                .data_dir
+                .as_path()
+                .join("icons/")
+                .as_path()
+                .join(subpath);
             if !src_path.exists() {
                 log::warn!("Source path for this icon does not exist! {:?}", src_path);
                 continue;
