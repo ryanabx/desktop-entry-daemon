@@ -1,4 +1,7 @@
-use std::{env, fs, path::PathBuf};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
 pub fn get_data_dir(clean: bool) -> PathBuf {
     let home = env::var("HOME").expect("can't find home environment variable!");
@@ -10,7 +13,8 @@ pub fn get_data_dir(clean: bool) -> PathBuf {
         // Clear old entries (won't error if it doesn't exist)
         let _ = fs::remove_dir_all(app_dir.clone());
         // Create the desktop-entry-daemon directory
-        let _ = fs::create_dir_all(app_dir.clone());
+        let _ = fs::create_dir_all(app_dir.clone().join(Path::new("icons")));
+        let _ = fs::create_dir_all(app_dir.clone().join(Path::new("applications")));
     }
     log::debug!("Got data dir: {:?}", app_dir);
     app_dir.to_owned()

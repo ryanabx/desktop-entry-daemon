@@ -26,9 +26,13 @@ impl Daemon {
                 .data_dir
                 .as_path()
                 .join(format!("applications/{}.desktop", app_id));
-            if let Ok(mut f) = File::create(desktop_file_path) {
-                if let Ok(_) = f.write_all(entry.as_bytes()) {
+            match std::fs::write(desktop_file_path, entry.as_bytes()) {
+                Ok(_) => {
+                    log::info!("Successful entry: {}", app_id);
                     successful_entries.push(app_id);
+                }
+                Err(e) => {
+                    log::error!("Could not write entry. '{}', error: {:?}", app_id, e);
                 }
             }
         }
