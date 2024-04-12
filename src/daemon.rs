@@ -1,7 +1,7 @@
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-use std::fs::{remove_file, File};
+use std::fs::{self, create_dir_all, remove_file, File};
 use zbus::interface;
 
 use crate::freedesktop::desktop_entry::validate_desktop_entry;
@@ -41,9 +41,53 @@ impl Daemon {
 
     /// register icons for applications. each icon must follow the
     /// [icon theme spec](https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html)
-    async fn register_icons(&self, icon_paths: Vec<&str>) -> Vec<String> {
-        log::debug!("Received icons: {:?}", icon_paths);
-        Vec::new()
+    async fn register_icons(&self, icon_paths: Vec<&str>, subpaths: Vec<&str>) -> Vec<String> {
+        log::debug!(
+            "Received icons: {:?} and subpaths: {:?}",
+            icon_paths,
+            subpaths
+        );
+        if icon_paths.len() != subpaths.len() {
+            log::error!(
+                "Lengths are not the same! {} vs {}",
+                icon_paths.len(),
+                subpaths.len()
+            );
+        }
+        let mut successful_icons = Vec::new();
+        for (icon_path, subpath) in Iterator::zip(icon_paths.iter(), subpaths.iter()) {
+            let src_path = Path::new(icon_path);
+            let dst_dir = self.data_dir.as_path().join(subpath);
+            if !src_path.exists() {
+                log::warn!("Source path for this icon does not exist! {:?}", src_path);
+                continue;
+            }
+            if dst_dir
+                .canonicalize()
+                .is_ok_and(|d| d.starts_with(&self.data_dir))
+            {
+                if !dst_dir.exists() {
+                    let _ = create_dir_all(&dst_dir);
+                    let file_name = src_path.file_name().unwrap().to_str().unwrap();
+                    let dst_path = dst_dir.join(Path::new(file_name));
+                    match fs::copy(src_path, &dst_path) {
+                        Ok(_) => {
+                            log::info!("Copied icon! {:?}", dst_path);
+                            successful_icons.push(file_name.to_string());
+                        }
+                        Err(e) => {
+                            log::error!("Problem copying file to '{:?}' error: {:?}", dst_path, e);
+                        }
+                    }
+                }
+            } else {
+                log::warn!(
+                    "dst_dir is not a subdirectory of data dir! {:?}",
+                    dst_dir.canonicalize()
+                );
+            }
+        }
+        successful_icons
     }
 
     /// remove desktop application entries. use the app_id to reference the entry
