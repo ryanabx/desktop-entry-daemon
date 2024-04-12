@@ -62,10 +62,7 @@ impl Daemon {
                 log::warn!("Source path for this icon does not exist! {:?}", src_path);
                 continue;
             }
-            if dst_dir
-                .canonicalize()
-                .is_ok_and(|d| d.starts_with(&self.data_dir))
-            {
+            if dst_dir.starts_with(&self.data_dir) {
                 if !dst_dir.exists() {
                     let _ = create_dir_all(&dst_dir);
                     let file_name = src_path.file_name().unwrap().to_str().unwrap();
