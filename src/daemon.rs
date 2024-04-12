@@ -14,68 +14,55 @@ pub struct Daemon {
 impl Daemon {
     /// register desktop application entries. each entry path should be encoded in a string in the list, and
     /// should follow the [desktop entry spec](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
-    async fn register_entries(&self, entry_paths: Vec<&str>) -> bool {
+    async fn register_entries(&self, entry_paths: Vec<&str>) -> Vec<String> {
         log::debug!("Received entries: {:?}", entry_paths);
-        let mut success = true;
         let modified_entries = entry_paths
             .iter()
-            .map(|entry| {
-                validate_desktop_entry(entry).unwrap_or_else(|| {
-                    success = false;
-                    ("".into(), "".into())
-                })
-            })
+            .filter_map(|entry| validate_desktop_entry(entry))
             .collect::<Vec<_>>();
-        if !success {
-            return false; // question: should we always early exit for this?
-        }
+        let mut successful_entries = Vec::new();
         for (ref entry, app_id) in modified_entries {
             let desktop_file_path = &self
                 .data_dir
                 .as_path()
                 .join(format!("applications/{}.desktop", app_id));
             if let Ok(mut f) = File::create(desktop_file_path) {
-                if let Err(_) = f.write_fmt(format_args!("{}", entry)) {
-                    success = false;
+                if let Ok(_) = f.write_all(entry.as_bytes()) {
+                    successful_entries.push(app_id);
                 }
-                if let Err(_) = f.flush() {
-                    success = false;
-                }
-            } else {
-                success = false;
             }
         }
-        success
+        successful_entries
     }
 
     /// register icons for applications. each icon must follow the
     /// [icon theme spec](https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html)
-    async fn register_icons(&self, icon_paths: Vec<&str>) -> bool {
+    async fn register_icons(&self, icon_paths: Vec<&str>) -> Vec<String> {
         log::debug!("Received icons: {:?}", icon_paths);
-        false
+        Vec::new()
     }
 
     /// remove desktop application entries. use the app_id to reference the entry
     /// to delete from the desktop-entry-daemon data directory
-    async fn remove_entries(&self, entry_names: Vec<&str>) -> bool {
+    async fn remove_entries(&self, entry_names: Vec<&str>) -> Vec<String> {
         log::debug!("Received entries to remove: {:?}", entry_names);
-        let mut success = true;
+        let mut successful_entries = Vec::new();
         for app_id in entry_names {
-            if let Err(_) = remove_file(
+            if let Ok(_) = remove_file(
                 self.data_dir
                     .as_path()
                     .join(format!("applications/{}.desktop", app_id)),
             ) {
-                success = false;
+                successful_entries.push(app_id.to_string());
             }
         }
-        success
+        successful_entries
     }
 
     /// remove icons. use the icon name to reference the entry
     /// to delete from the desktop-entry-daemon data directory
-    async fn remove_icons(&self, icon_names: Vec<&str>) -> bool {
+    async fn remove_icons(&self, icon_names: Vec<&str>) -> Vec<String> {
         log::debug!("Received icons to remove: {:?}", icon_names);
-        false
+        Vec::new()
     }
 }
