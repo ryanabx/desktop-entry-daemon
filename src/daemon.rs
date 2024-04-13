@@ -70,16 +70,16 @@ impl Daemon {
             if dst_dir.starts_with(&self.data_dir) {
                 if !dst_dir.exists() {
                     let _ = create_dir_all(&dst_dir);
-                    let file_name = src_path.file_name().unwrap().to_str().unwrap();
-                    let dst_path = dst_dir.join(Path::new(file_name));
-                    match fs::copy(src_path, &dst_path) {
-                        Ok(_) => {
-                            log::info!("Copied icon! {:?}", dst_path);
-                            successful_icons.push(file_name.to_string());
-                        }
-                        Err(e) => {
-                            log::error!("Problem copying file to '{:?}' error: {:?}", dst_path, e);
-                        }
+                }
+                let file_name = src_path.file_name().unwrap().to_str().unwrap();
+                let dst_path = dst_dir.join(Path::new(file_name));
+                match fs::copy(src_path, &dst_path) {
+                    Ok(_) => {
+                        log::info!("Copied icon! {:?}", dst_path);
+                        successful_icons.push(file_name.to_string());
+                    }
+                    Err(e) => {
+                        log::error!("Problem copying file to '{:?}' error: {:?}", dst_path, e);
                     }
                 }
             } else {
