@@ -1,5 +1,4 @@
-# desktop-entry-daemon
-
+![](res/desktopentry.png)
 A daemon to manage temporary desktop entries!
 
 ## Dbus API
