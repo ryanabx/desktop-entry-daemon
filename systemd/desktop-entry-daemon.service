@@ -1,6 +1,5 @@
 [Unit]
 Description=XDG Temp daemon
-PartOf=graphical-session.target
 
 [Service]
 BusName=net.ryanabx.DesktopEntry
@@ -11,4 +10,5 @@ Slice=session.slice
 
 [Install]
 WantedBy=graphical-session.target
+Before=graphical-session.target
 Alias=dbus-net.ryanabx.DesktopEntry.service
