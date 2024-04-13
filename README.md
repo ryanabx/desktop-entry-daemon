@@ -1,7 +1,9 @@
 ![](res/desktopentry.png)
-A daemon to manage temporary desktop entries!
+A dbus api and daemon to manage temporary desktop entries!
 
-## Dbus API
+The desktop entries are cleaned after rebooting.
+
+## DBus API
 
 Introspection XML is in the root of this repo: `net.ryanabx.DesktopEntry`
 
@@ -13,20 +15,24 @@ Introspection XML is in the root of this repo: `net.ryanabx.DesktopEntry`
 
 ### Projects that use this dbus service
 
-* [container-desktop-entries](https://github.com/ryanabx/container-desktop-entries)
+* [container-desktop-entries](https://github.com/ryanabx/container-desktop-entries) (Supports Toolbox, Docker, and Podman containers)
 * appimage-desktop-entries (Coming soon!)
 
-## Build/Install
+## Build/Install/Uninstall
 
-`just build`
+**BUILD**
 
-`just install`
+    just build
 
-`systemctl enable desktop-entry-daemon`
+**INSTALL**
 
-## Uninstall
+    just install
+    systemctl enable desktop-entry-daemon
 
-`just uninstall`
+**UNINSTALL**
+
+    systemctl disable desktop-entry-daemon
+    just uninstall
 
 ## Contributing
 

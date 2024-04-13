@@ -1,5 +1,6 @@
 [Unit]
-Description=XDG Temp daemon
+Description=A daemon to manage temporary desktop entries
+Wants=desktop-entry-daemon-clean.service
 
 [Service]
 BusName=net.ryanabx.DesktopEntry

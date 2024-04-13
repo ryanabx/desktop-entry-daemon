@@ -41,6 +41,8 @@ impl Daemon {
 
     /// register icons for applications. each icon must follow the
     /// [icon theme spec](https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html)
+    /// `icon paths` must contain full paths to icons, and `subpaths` should contain the subpath to add the icon to.
+    /// for example, if the icon is an svg and is to be added to the hicolor theme, use `hicolor/scalable/apps/name.svg`
     async fn register_icons(&self, icon_paths: Vec<&str>, subpaths: Vec<&str>) -> Vec<String> {
         log::debug!(
             "Received icons: {:?} and subpaths: {:?}",
@@ -90,29 +92,5 @@ impl Daemon {
             }
         }
         successful_icons
-    }
-
-    /// remove desktop application entries. use the app_id to reference the entry
-    /// to delete from the desktop-entry-daemon data directory
-    async fn remove_entries(&self, entry_names: Vec<&str>) -> Vec<String> {
-        log::debug!("Received entries to remove: {:?}", entry_names);
-        let mut successful_entries = Vec::new();
-        for app_id in entry_names {
-            if let Ok(_) = remove_file(
-                self.data_dir
-                    .as_path()
-                    .join(format!("applications/{}.desktop", app_id)),
-            ) {
-                successful_entries.push(app_id.to_string());
-            }
-        }
-        successful_entries
-    }
-
-    /// remove icons. use the icon name to reference the entry
-    /// to delete from the desktop-entry-daemon data directory
-    async fn remove_icons(&self, icon_names: Vec<&str>) -> Vec<String> {
-        log::debug!("Received icons to remove: {:?}", icon_names);
-        Vec::new()
     }
 }
