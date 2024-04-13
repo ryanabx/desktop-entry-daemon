@@ -18,3 +18,4 @@ A daemon to manage temporary desktop entries!
 ### Uninstall
 
 `just uninstall`
+
