@@ -11,13 +11,13 @@ lib-dir := '/lib'
 daemon-src := 'target' / 'release' / name
 daemon-dst := base-dir / 'bin' / name
 
-data-src := 'data' / 'desktop-entry-daemon.profile.d.in'
+data-src := 'profile' / 'desktop-entry-daemon.sh'
 data-dst := conf-dir / 'profile.d' / 'desktop-entry-daemon.sh'
 
-service-src := 'data' / 'desktop-entry-daemon.service.in'
+service-src := 'systemd' / 'desktop-entry-daemon.service'
 service-dst := lib-dir / 'systemd' / 'user' / 'desktop-entry-daemon.service'
 
-clean-service-src := 'data' / 'desktop-entry-daemon-clean.service.in'
+clean-service-src := 'systemd' / 'desktop-entry-daemon-clean.service'
 clean-service-dst := lib-dir / 'systemd' / 'user' / 'desktop-entry-daemon-clean.service'
 
 build *args:
