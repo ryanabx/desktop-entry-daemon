@@ -27,11 +27,13 @@ Introspection XML is in the root of this repo: `net.ryanabx.DesktopEntry`
 **INSTALL**
 
     just install
-    systemctl enable desktop-entry-daemon
+    systemctl --user enable desktop-entry-daemon
+    systemctl --user start desktop-entry-daemon
 
 **UNINSTALL**
 
-    systemctl disable desktop-entry-daemon
+    systemctl --user stop desktop-entry-daemon
+    systemctl --user disable desktop-entry-daemon
     just uninstall
 
 ## Contributing
