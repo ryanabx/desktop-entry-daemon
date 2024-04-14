@@ -86,6 +86,20 @@ impl Daemon {
             .decode()
         {
             log::info!("{} is a valid image", name);
+            if img.width() != img.height() {
+                log::error!(
+                    "Image width and height are different! {} != {}",
+                    img.width(),
+                    img.height()
+                );
+                return false;
+            }
+            let img = if img.width() > 512 {
+                log::warn!("Image size was greater than 512! Resizing icon to 512x512.");
+                img.resize(512, 512, image::imageops::FilterType::Lanczos3)
+            } else {
+                img
+            };
             let image_size_dir = format!("{}x{}", img.width(), img.height());
             let _ = create_dir_all(self.data_dir.join(Path::new(&format!(
                 "icons/hicolor/{}/apps/",
