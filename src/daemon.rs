@@ -96,12 +96,15 @@ impl Daemon {
                 log::error!("Path '{}' already exists!", f_path);
                 return false;
             }
-            if let Ok(_) = img.save_with_format(Path::new(f_path), image::ImageFormat::Png) {
-                log::info!("Success! {}", name);
-                true
-            } else {
-                log::error!("Could not write to data dir");
-                false
+            match img.save_with_format(Path::new(f_path), image::ImageFormat::Png) {
+                Ok(_) => {
+                    log::info!("Success! {}", name);
+                    true
+                }
+                Err(e) => {
+                    log::error!("Could not write png to data dir. Reason: {}", e);
+                    false
+                }
             }
         } else if let Ok(text_data) = String::from_utf8(data.into()) {
             log::info!("{} is valid utf8 text", name);
@@ -111,12 +114,15 @@ impl Daemon {
                     log::error!("Path '{}' already exists!", f_path);
                     return false;
                 }
-                if let Ok(_) = fs::write(Path::new(f_path), text_data.as_bytes()) {
-                    log::info!("Success! {}", name);
-                    true
-                } else {
-                    log::error!("Could not write image to data dir");
-                    false
+                match fs::write(Path::new(f_path), text_data.as_bytes()) {
+                    Ok(_) => {
+                        log::info!("Success! {}", name);
+                        true
+                    }
+                    Err(e) => {
+                        log::error!("Could not write svg to data dir. Reason: {}", e);
+                        false
+                    }
                 }
             } else {
                 log::error!("Could not convert text data to svg.");
