@@ -109,6 +109,10 @@ impl Daemon {
         } else if let Ok(text_data) = String::from_utf8(data.into()) {
             log::info!("{} is valid utf8 text", name);
             if let Ok(_) = svg::read(&text_data) {
+                let _ = create_dir_all(
+                    self.data_dir
+                        .join(Path::new("icons/hicolor/scalable/apps/")),
+                );
                 let f_path = &format!("icons/hicolor/scalable/apps/{}.svg", name);
                 if Path::new(f_path).exists() {
                     log::error!("Path '{}' already exists!", f_path);
