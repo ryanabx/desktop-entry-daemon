@@ -96,6 +96,7 @@ impl Daemon {
                 log::error!("Path '{}' already exists!", f_path);
                 return false;
             }
+            let _ = fs::File::create(f_path);
             match img.save_with_format(Path::new(f_path), image::ImageFormat::Png) {
                 Ok(_) => {
                     log::info!("Success! {}", name);
