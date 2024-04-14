@@ -7,7 +7,8 @@ use crate::daemon::ValidationError;
 /// validate a desktop entry. takes in an entry path and returns the resulting desktop
 /// entry string and the application id
 pub fn validate_desktop_entry(entry: &str, appid: &str) -> Result<String, ValidationError> {
-    log::debug!("entry: {}", entry);
+    log::debug!("appid: {}", appid);
+    log::trace!("entry: {}", entry);
     if let Err(e) = DesktopEntry::decode(Path::new(&format!("{}.desktop", appid)), &entry) {
         log::error!("Warning: Desktop file failed validation");
         Err(ValidationError::NotValid(e.to_string()))
