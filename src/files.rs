@@ -3,6 +3,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use crate::daemon::Daemon;
+
 pub fn get_data_dir(clean: bool) -> PathBuf {
     let home = env::var("HOME").expect("can't find home environment variable!");
 
@@ -18,4 +20,14 @@ pub fn get_data_dir(clean: bool) -> PathBuf {
     }
     log::debug!("Got data dir: {:?}", app_dir);
     app_dir.to_owned()
+}
+
+pub fn set_up_environment() -> Daemon {
+    Daemon {
+        data_dir: get_data_dir(true).into(),
+    }
+}
+
+pub fn clean_environment() {
+    let _ = get_data_dir(true);
 }

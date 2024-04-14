@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::fs::{self, create_dir_all};
 use zbus::interface;
 
-use crate::freedesktop::desktop_entry::validate_desktop_entry;
+use crate::desktop_entry::validate_desktop_entry;
 
 pub struct Daemon {
     pub data_dir: PathBuf,
@@ -108,10 +108,8 @@ impl Daemon {
             log::info!("{} is valid utf8 text", name);
             if let Ok(_) = svg::read(&text_data) {
                 if let Ok(_) = fs::write(
-                    self.data_dir.join(Path::new(&format!(
-                        "hicolor/scalable/apps/{}.svg",
-                        name
-                    ))),
+                    self.data_dir
+                        .join(Path::new(&format!("hicolor/scalable/apps/{}.svg", name))),
                     text_data.as_bytes(),
                 ) {
                     log::info!("Success! {}", name);

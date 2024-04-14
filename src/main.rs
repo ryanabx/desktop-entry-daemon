@@ -1,9 +1,11 @@
 use clap::Parser;
 use zbus::{Connection, Result as ZbusResult};
 
+use crate::files::{clean_environment, set_up_environment};
+
 mod daemon;
-mod freedesktop;
-mod utils;
+mod desktop_entry;
+mod files;
 
 /// program to manage temporary desktop entries
 #[derive(Parser, Debug)]
@@ -20,11 +22,11 @@ async fn main() -> ZbusResult<()> {
     let args = Args::parse();
     if args.clean {
         // clean space
-        utils::clean_environment();
+        clean_environment();
         return Ok(());
     }
     // start daemon
-    let daemon = utils::set_up_environment();
+    let daemon = set_up_environment();
     let connection = Connection::session().await?;
     // setup the server
     connection
