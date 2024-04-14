@@ -87,16 +87,16 @@ impl Daemon {
         {
             log::info!("{} is a valid image", name);
             let image_size_dir = format!("{}x{}", img.width(), img.height());
-            let _ = create_dir_all(
-                self.data_dir
-                    .join(Path::new(&format!("hicolor/{}/apps/", image_size_dir))),
-            );
-            if let Ok(_) = fs::write(
-                self.data_dir.join(Path::new(&format!(
-                    "hicolor/{}/apps/{}.svg",
+            let _ = create_dir_all(self.data_dir.join(Path::new(&format!(
+                "icons/hicolor/{}/apps/",
+                image_size_dir
+            ))));
+            if let Ok(_) = img.save_with_format(
+                Path::new(&format!(
+                    "icons/hicolor/{}/apps/{}.png",
                     image_size_dir, name
-                ))),
-                img.as_bytes(),
+                )),
+                image::ImageFormat::Png,
             ) {
                 log::info!("Success! {}", name);
                 true
@@ -108,8 +108,10 @@ impl Daemon {
             log::info!("{} is valid utf8 text", name);
             if let Ok(_) = svg::read(&text_data) {
                 if let Ok(_) = fs::write(
-                    self.data_dir
-                        .join(Path::new(&format!("hicolor/scalable/apps/{}.svg", name))),
+                    self.data_dir.join(Path::new(&format!(
+                        "icons/hicolor/scalable/apps/{}.svg",
+                        name
+                    ))),
                     text_data.as_bytes(),
                 ) {
                     log::info!("Success! {}", name);
