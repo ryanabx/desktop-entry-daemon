@@ -24,7 +24,7 @@ pub fn get_data_dir(clean: bool) -> PathBuf {
 
 pub fn set_up_environment() -> Daemon {
     Daemon {
-        data_dir: get_data_dir(true).into(),
+        data_dir: get_data_dir(false).into(),
     }
 }
 
