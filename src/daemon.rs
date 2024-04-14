@@ -91,13 +91,12 @@ impl Daemon {
                 "icons/hicolor/{}/apps/",
                 image_size_dir
             ))));
-            if let Ok(_) = img.save_with_format(
-                Path::new(&format!(
-                    "icons/hicolor/{}/apps/{}.png",
-                    image_size_dir, name
-                )),
-                image::ImageFormat::Png,
-            ) {
+            let f_path = &format!("icons/hicolor/{}/apps/{}.png", image_size_dir, name);
+            if Path::new(f_path).exists() {
+                log::error!("Path '{}' already exists!", f_path);
+                return false;
+            }
+            if let Ok(_) = img.save_with_format(Path::new(f_path), image::ImageFormat::Png) {
                 log::info!("Success! {}", name);
                 true
             } else {
@@ -107,13 +106,12 @@ impl Daemon {
         } else if let Ok(text_data) = String::from_utf8(data.into()) {
             log::info!("{} is valid utf8 text", name);
             if let Ok(_) = svg::read(&text_data) {
-                if let Ok(_) = fs::write(
-                    self.data_dir.join(Path::new(&format!(
-                        "icons/hicolor/scalable/apps/{}.svg",
-                        name
-                    ))),
-                    text_data.as_bytes(),
-                ) {
+                let f_path = &format!("icons/hicolor/scalable/apps/{}.svg", name);
+                if Path::new(f_path).exists() {
+                    log::error!("Path '{}' already exists!", f_path);
+                    return false;
+                }
+                if let Ok(_) = fs::write(Path::new(f_path), text_data.as_bytes()) {
                     log::info!("Success! {}", name);
                     true
                 } else {
