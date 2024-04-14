@@ -12,85 +12,70 @@ pub struct Daemon {
 
 #[interface(name = "net.ryanabx.DesktopEntry")]
 impl Daemon {
-    /// register desktop application entries. each entry path should be encoded in a string in the list, and
-    /// should follow the [desktop entry spec](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
-    async fn register_entries(&self, entry_paths: Vec<&str>) -> Vec<String> {
-        log::debug!("Received entries: {:?}", entry_paths);
-        let modified_entries = entry_paths
-            .iter()
-            .filter_map(|entry| validate_desktop_entry(entry))
-            .collect::<Vec<_>>();
-        let mut successful_entries = Vec::new();
-        for (ref entry, app_id) in modified_entries {
+    /// Register a new application entry. The utf-8 encoded `entry` will be validated to be conformant with the
+    /// [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
+    /// Returns true if the operation is successful, false otherwise
+    async fn register_entry(&self, app_id: String, entry: String) -> bool {
+        log::debug!("Received entry for app id: {:?}", app_id);
+        if let Some(entry) = validate_desktop_entry(entry) {
             let desktop_file_path = &self
                 .data_dir
                 .as_path()
                 .join(format!("applications/{}.desktop", app_id));
+            let _ = create_dir_all(self.data_dir.join(Path::new("applications")));
             match std::fs::write(desktop_file_path, entry.as_bytes()) {
                 Ok(_) => {
                     log::info!("Successful entry: {}", app_id);
-                    successful_entries.push(app_id);
+                    return true;
                 }
                 Err(e) => {
                     log::error!("Could not write entry. '{}', error: {:?}", app_id, e);
                 }
             }
         }
-        successful_entries
+        false
     }
 
-    /// register icons for applications. each icon must follow the
-    /// [icon theme spec](https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html)
-    /// `icon paths` must contain full paths to icons, and `subpaths` should contain the subpath to add the icon to.
-    /// for example, if the icon is an svg and is to be added to the hicolor theme, use `hicolor/scalable/apps/name.svg`
-    async fn register_icons(&self, icon_paths: Vec<&str>, subpaths: Vec<&str>) -> Vec<String> {
-        log::debug!(
-            "Received icons: {:?} and subpaths: {:?}",
-            icon_paths,
-            subpaths
-        );
-        if icon_paths.len() != subpaths.len() {
-            log::error!(
-                "Lengths are not the same! {} vs {}",
-                icon_paths.len(),
-                subpaths.len()
+    /// Register a new application icon. The icon data should be valid .png or .svg data, and the icon type should be
+    /// 0 for .png, 1 for .svg. The icon name is the name desktop entries reference when using the icon. The method will
+    /// returns true if successful, false otherwise.
+    async fn register_icon(&self, icon_name: String, icon_data: &[u8]) -> bool {
+        if let Ok(img) = image::io::Reader::new(std::io::Cursor::new(icon_data))
+            .with_guessed_format()
+            .unwrap()
+            .decode()
+        {
+            log::info!("{} is a valid image", icon_name);
+            let image_size_dir = format!("{}x{}", img.width(), img.height());
+            let _ = create_dir_all(
+                self.data_dir
+                    .join(Path::new(&format!("hicolor/{}/apps/", image_size_dir))),
             );
-        }
-        let mut successful_icons = Vec::new();
-        for (icon_path, subpath) in Iterator::zip(icon_paths.iter(), subpaths.iter()) {
-            let src_path = Path::new(icon_path);
-            let dst_dir = self
-                .data_dir
-                .as_path()
-                .join("icons/")
-                .as_path()
-                .join(subpath);
-            if !src_path.exists() {
-                log::warn!("Source path for this icon does not exist! {:?}", src_path);
-                continue;
+            if let Ok(_) = fs::write(
+                self.data_dir.join(Path::new(&format!(
+                    "hicolor/{}/apps/{}.svg",
+                    image_size_dir, icon_name
+                ))),
+                img.as_bytes(),
+            ) {
+                log::info!("Success! {}", icon_name);
+                return true;
             }
-            if dst_dir.starts_with(&self.data_dir) {
-                if !dst_dir.exists() {
-                    let _ = create_dir_all(&dst_dir);
+        } else if let Ok(text_data) = String::from_utf8(icon_data.into()) {
+            log::info!("{} is valid utf8 text", icon_name);
+            if let Ok(_) = svg::read(&text_data) {
+                if let Ok(_) = fs::write(
+                    self.data_dir.join(Path::new(&format!(
+                        "hicolor/scalable/apps/{}.svg",
+                        icon_name
+                    ))),
+                    text_data.as_bytes(),
+                ) {
+                    log::info!("Success! {}", icon_name);
+                    return true;
                 }
-                let file_name = src_path.file_name().unwrap().to_str().unwrap();
-                let dst_path = dst_dir.join(Path::new(file_name));
-                match fs::copy(src_path, &dst_path) {
-                    Ok(_) => {
-                        log::info!("Copied icon! {:?}", dst_path);
-                        successful_icons.push(file_name.to_string());
-                    }
-                    Err(e) => {
-                        log::error!("Problem copying file to '{:?}' error: {:?}", dst_path, e);
-                    }
-                }
-            } else {
-                log::warn!(
-                    "dst_dir is not a subdirectory of data dir! {:?}",
-                    dst_dir.canonicalize()
-                );
             }
         }
-        successful_icons
+        false
     }
 }
