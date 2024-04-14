@@ -1,38 +1,34 @@
-use std::{fs::read_to_string, path::Path, process::Command};
+use std::{fs, path::Path};
+
+use freedesktop_desktop_entry::{default_paths, DesktopEntry, Iter};
+
+use crate::daemon::ValidationError;
 
 /// validate a desktop entry. takes in an entry path and returns the resulting desktop
 /// entry string and the application id
-pub fn validate_desktop_entry(entry: String) -> Option<String> {
+pub fn validate_desktop_entry(entry: &str, appid: &str) -> Result<String, ValidationError> {
     log::debug!("entry: {}", entry);
-    if let Some(false) | None = run_desktop_file_validate(&entry) {
-        log::warn!("Warning: Desktop file failed validation");
-        return None;
+    if let Err(e) = DesktopEntry::decode(Path::new(&format!("{}.desktop", appid)), &entry) {
+        log::error!("Warning: Desktop file failed validation");
+        Err(ValidationError::NotValid(e.to_string()))
+    } else if app_exists(appid) {
+        Err(ValidationError::DuplicateAppID)
+    } else {
+        Ok(entry.to_string())
     }
     // TODO: Extra validation (strip exec, etc...)
-    Some(entry)
 }
 
-fn run_desktop_file_validate(entry: &str) -> Option<bool> {
-    Some(true)
-    // match Command::new("sh")
-    //     .arg("-c")
-    //     .arg(format!(
-    //         "desktop-file-validate --no-hints --no-warn-deprecated {}",
-    //         entry_path
-    //     ))
-    //     .output()
-    // {
-    //     Ok(output) => {
-    //         let stdout = String::from_utf8(output.stdout).unwrap();
-    //         let stderr = String::from_utf8(output.stderr).unwrap();
-    //         log::debug!(
-    //             "stdout: '{}', stderr: '{}' stdout.is_empty(): {}",
-    //             stdout,
-    //             stderr,
-    //             stdout.is_empty()
-    //         );
-    //         Some(stdout.is_empty())
-    //     }
-    //     Err(_) => None,
-    // }
+fn app_exists(id: &str) -> bool {
+    for path in Iter::new(default_paths()) {
+        // let path_src = PathSource::guess_from(&path);
+        if let Ok(bytes) = fs::read_to_string(&path) {
+            if let Ok(entry) = DesktopEntry::decode(&path, &bytes) {
+                if entry.appid == id {
+                    return true;
+                }
+            }
+        }
+    }
+    false
 }

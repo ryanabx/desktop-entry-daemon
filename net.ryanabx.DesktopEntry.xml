@@ -2,6 +2,33 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg type="s" direction="out"/>
+    </method>
+  </interface>
+  <interface name="net.ryanabx.DesktopEntry">
+    <!--
+     Register a new application entry. The utf-8 encoded `entry` will be validated to be conformant with the
+     [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
+     Returns true if the operation is successful, false otherwise
+     -->
+    <method name="RegisterEntry">
+      <arg name="appid" type="s" direction="in"/>
+      <arg name="entry" type="s" direction="in"/>
+      <arg type="b" direction="out"/>
+    </method>
+    <!--
+     Register a new application icon. The icon data should be valid .png or .svg data, and the icon type should be
+     0 for .png, 1 for .svg. The icon name is the name desktop entries reference when using the icon. The method will
+     returns true if successful, false otherwise.
+     -->
+    <method name="RegisterIcon">
+      <arg name="name" type="s" direction="in"/>
+      <arg name="data" type="ay" direction="in"/>
+      <arg type="b" direction="out"/>
+    </method>
+  </interface>
   <interface name="org.freedesktop.DBus.Properties">
     <method name="Get">
       <arg name="interface_name" type="s" direction="in"/>
@@ -25,32 +52,6 @@
       <arg name="changed_properties" type="a{sv}"/>
       <arg name="invalidated_properties" type="as"/>
     </signal>
-  </interface>
-  <interface name="org.freedesktop.DBus.Introspectable">
-    <method name="Introspect">
-      <arg type="s" direction="out"/>
-    </method>
-  </interface>
-  <interface name="net.ryanabx.DesktopEntry">
-    <!--
-     register desktop application entries. each entry path should be encoded in a string in the list, and
-     should follow the [desktop entry spec](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
-     -->
-    <method name="RegisterEntries">
-      <arg name="entry_paths" type="as" direction="in"/>
-      <arg type="as" direction="out"/>
-    </method>
-    <!--
-     register icons for applications. each icon must follow the
-     [icon theme spec](https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html)
-     `icon paths` must contain full paths to icons, and `subpaths` should contain the subpath to add the icon to.
-     for example, if the icon is an svg and is to be added to the hicolor theme, use `hicolor/scalable/apps/name.svg`
-     -->
-    <method name="RegisterIcons">
-      <arg name="icon_paths" type="as" direction="in"/>
-      <arg name="subpaths" type="as" direction="in"/>
-      <arg type="as" direction="out"/>
-    </method>
   </interface>
   <interface name="org.freedesktop.DBus.Peer">
     <method name="Ping">
