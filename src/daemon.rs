@@ -92,12 +92,17 @@ impl Daemon {
                 image_size_dir
             ))));
             let f_path = &format!("icons/hicolor/{}/apps/{}.png", image_size_dir, name);
-            if Path::new(f_path).exists() {
-                log::error!("Path '{}' already exists!", f_path);
+            if self.data_dir.join(Path::new(f_path)).exists() {
+                log::error!(
+                    "Path '{}' already exists!",
+                    self.data_dir.join(Path::new(f_path)).to_str().unwrap()
+                );
                 return false;
             }
-            let _ = fs::File::create(f_path);
-            match img.save_with_format(Path::new(f_path), image::ImageFormat::Png) {
+            match img.save_with_format(
+                self.data_dir.join(Path::new(f_path)),
+                image::ImageFormat::Png,
+            ) {
                 Ok(_) => {
                     log::info!("Success! {}", name);
                     true
@@ -115,11 +120,14 @@ impl Daemon {
                         .join(Path::new("icons/hicolor/scalable/apps/")),
                 );
                 let f_path = &format!("icons/hicolor/scalable/apps/{}.svg", name);
-                if Path::new(f_path).exists() {
-                    log::error!("Path '{}' already exists!", f_path);
+                if self.data_dir.join(Path::new(f_path)).exists() {
+                    log::error!(
+                        "Path '{}' already exists!",
+                        self.data_dir.join(Path::new(f_path)).to_str().unwrap()
+                    );
                     return false;
                 }
-                match fs::write(Path::new(f_path), text_data.as_bytes()) {
+                match fs::write(self.data_dir.join(Path::new(f_path)), text_data.as_bytes()) {
                     Ok(_) => {
                         log::info!("Success! {}", name);
                         true
