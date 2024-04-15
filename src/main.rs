@@ -1,4 +1,6 @@
+use async_std::stream::StreamExt;
 use clap::Parser;
+use zbus::fdo::{DBusProxy, NameOwnerChangedArgs};
 use zbus::{Connection, Result as ZbusResult};
 
 use crate::files::{clean_environment, set_up_environment};
@@ -6,6 +8,7 @@ use crate::files::{clean_environment, set_up_environment};
 mod daemon;
 mod desktop_entry;
 mod files;
+mod types;
 
 /// program to manage temporary desktop entries
 #[derive(Parser, Debug)]
@@ -25,6 +28,7 @@ async fn main() -> ZbusResult<()> {
         clean_environment();
         return Ok(());
     }
+    let _ = async_std::task::spawn(async { watch_name_owner_changed().await });
     // start daemon
     let daemon = set_up_environment();
     let connection = Connection::session().await?;
@@ -35,10 +39,34 @@ async fn main() -> ZbusResult<()> {
         .await?;
     // before requesting the name
     connection.request_name("net.ryanabx.DesktopEntry").await?;
+    log::info!("Running server connection and listening for calls");
 
     loop {
         // do something else, wait forever or timeout here:
         // handling D-Bus messages is done in the background
         std::future::pending::<()>().await;
     }
+}
+
+async fn watch_name_owner_changed() -> zbus::Result<()> {
+    log::info!("Watching if name owner changes!");
+    let connection = Connection::system().await?;
+    // `Systemd1ManagerProxy` is generated from `Systemd1Manager` trait
+    let dbus_proxy = DBusProxy::new(&connection).await?;
+    // Method `receive_job_new` is generated from `job_new` signal
+    let mut name_owner_changed_stream = dbus_proxy.receive_name_owner_changed().await?;
+
+    while let Some(msg) = name_owner_changed_stream.next().await {
+        // struct `JobNewArgs` is generated from `job_new` signal function arguments
+        let args: NameOwnerChangedArgs = msg.args().expect("Error parsing message");
+
+        log::info!(
+            "NameOwnerChanged received: name={} old_owner={:?} new_owner={:?}",
+            args.name(),
+            args.old_owner(),
+            args.new_owner()
+        );
+    }
+
+    panic!("Stream ended unexpectedly");
 }

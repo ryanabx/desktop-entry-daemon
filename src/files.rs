@@ -1,4 +1,5 @@
 use std::{
+    collections::{HashMap, HashSet},
     env, fs,
     path::{Path, PathBuf},
 };
@@ -24,7 +25,10 @@ pub fn get_data_dir(clean: bool) -> PathBuf {
 
 pub fn set_up_environment() -> Daemon {
     Daemon {
-        data_dir: get_data_dir(false).into(),
+        data_dir: get_data_dir(true).into(),
+        entries: HashMap::new(),
+        icons: HashMap::new(),
+        change_handlers: HashSet::new(),
     }
 }
 
