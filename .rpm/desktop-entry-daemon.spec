@@ -50,7 +50,7 @@ cat .vendor/config.toml >> .cargo/config
 %{cargo_vendor_manifest}
 
 %install
-install -Dm0755 target/release/desktop-entry-daemon %{buildroot}/%{_bindir}/desktop-entry-daemon
+install -Dm0755 target/release/desktop-entry-daemon %{buildroot}/%{_libexecdir}/desktop-entry-daemon
 install -Dm0644 profile/desktop-entry-daemon.sh %{buildroot}/%{_sysconfdir}/profile.d/desktop-entry-daemon.sh
 install -Dm0644 systemd/desktop-entry-daemon.service %{buildroot}/%{_userunitdir}/desktop-entry-daemon.service
 
@@ -77,7 +77,7 @@ install -Dm0644 systemd/desktop-entry-daemon.service %{buildroot}/%{_userunitdir
 %license LICENSE.dependencies
 # %%license cargo-vendor.txt
 %doc README.md
-%{_bindir}/%{name}
+%{_libexecdir}/%{name}
 %{_userunitdir}/%{name}.service
 %{_sysconfdir}/profile.d/%{name}.sh
 

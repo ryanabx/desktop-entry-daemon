@@ -5,13 +5,7 @@ The desktop entries are cleaned after rebooting.
 
 ## DBus API
 
-Introspection XML is in the root of this repo: `net.ryanabx.DesktopEntry`
-
-### Basic rundown
-
-`register_entry` takes a list of strings that identify paths to .desktop entries to register.
-
-`register_icons` takes a two lists of strings - one to identify the full path to the icon, the other identifies what supbath of the icons directory to save to (for example, `hicolor/48x48/apps/`)
+Introspection XML can be found in the introspection/out folder: `net.ryanabx.DesktopEntry.xml`
 
 ### Projects that use this dbus service
 

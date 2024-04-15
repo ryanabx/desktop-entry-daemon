@@ -5,7 +5,8 @@ Wants=desktop-entry-daemon-clean.service
 [Service]
 BusName=net.ryanabx.DesktopEntry
 Environment="RUST_LOG=debug"
-ExecStart=desktop-entry-daemon
+ExecStart=/usr/libexec/desktop-entry-daemon
+RuntimeDirectory=desktop-entry-daemon
 Type=dbus
 Slice=session.slice
 

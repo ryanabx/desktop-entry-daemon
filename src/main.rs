@@ -79,17 +79,22 @@ async fn watch_name_owner_changed(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::Re
 }
 
 pub fn get_data_dir(clean: bool) -> PathBuf {
-    let home = env::var("HOME").expect("can't find home environment variable!");
-
-    let mut app_dir = PathBuf::new();
-    app_dir.push(home);
-    app_dir.push(".cache/desktop-entry-daemon/share/");
+    let home =
+        env::var("RUNTIME_DIRECTORY").expect("can't find XDG_RUNTIME_DIR environment variable!");
+    let app_dir = Path::new(&home);
+    if !app_dir.exists() {
+        log::warn!(
+            "Runtime directory {} does not exist!",
+            app_dir.to_str().unwrap()
+        );
+    }
     if clean {
         // Clear old entries (won't error if it doesn't exist)
-        let _ = remove_dir_all(app_dir.clone());
+        let _ = remove_dir_all(app_dir.join(Path::new("icons")));
+        let _ = remove_dir_all(app_dir.join(Path::new("applications")));
         // Create the desktop-entry-daemon directory
-        let _ = create_dir_all(app_dir.clone().join(Path::new("icons")));
-        let _ = create_dir_all(app_dir.clone().join(Path::new("applications")));
+        let _ = create_dir_all(app_dir.join(Path::new("icons")));
+        let _ = create_dir_all(app_dir.join(Path::new("applications")));
     }
     log::debug!("Got data dir: {:?}", app_dir);
     app_dir.to_owned()
@@ -97,7 +102,7 @@ pub fn get_data_dir(clean: bool) -> PathBuf {
 
 pub fn set_up_environment(catalog: Arc<Mutex<EntryCatalog>>) -> Daemon {
     Daemon {
-        data_dir: get_data_dir(true).into(),
+        data_dir: get_data_dir(false).into(),
         catalog,
     }
 }
