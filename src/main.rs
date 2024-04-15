@@ -1,39 +1,25 @@
+use std::env;
+use std::fs::{create_dir_all, remove_dir_all};
+use std::path::{Path, PathBuf};
+
 use async_std::sync::Arc;
 
 use async_std::stream::StreamExt;
 use async_std::sync::Mutex;
-use clap::Parser;
 use daemon::Daemon;
 use zbus::fdo::{DBusProxy, NameOwnerChangedArgs};
 use zbus::names::OwnedUniqueName;
 use zbus::{Connection, Result as ZbusResult};
 
-use crate::files::{clean_environment, set_up_environment};
 use crate::types::EntryCatalog;
 
 mod daemon;
 mod desktop_entry;
-mod files;
 mod types;
-
-/// program to manage temporary desktop entries
-#[derive(Parser, Debug)]
-#[command(version, about)]
-struct Args {
-    /// clear all temporary desktop entries
-    #[arg(short, long, action = clap::ArgAction::SetTrue)]
-    clean: bool,
-}
 
 #[async_std::main]
 async fn main() -> ZbusResult<()> {
     env_logger::init();
-    let args = Args::parse();
-    if args.clean {
-        // clean space
-        clean_environment();
-        return Ok(());
-    }
     let catalog = Arc::new(Mutex::new(EntryCatalog::new()));
     let c = catalog.clone();
     let _ = async_std::task::spawn(async { watch_name_owner_changed(c).await });
@@ -90,4 +76,28 @@ async fn watch_name_owner_changed(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::Re
     }
 
     panic!("Stream ended unexpectedly");
+}
+
+pub fn get_data_dir(clean: bool) -> PathBuf {
+    let home = env::var("HOME").expect("can't find home environment variable!");
+
+    let mut app_dir = PathBuf::new();
+    app_dir.push(home);
+    app_dir.push(".cache/desktop-entry-daemon/share/");
+    if clean {
+        // Clear old entries (won't error if it doesn't exist)
+        let _ = remove_dir_all(app_dir.clone());
+        // Create the desktop-entry-daemon directory
+        let _ = create_dir_all(app_dir.clone().join(Path::new("icons")));
+        let _ = create_dir_all(app_dir.clone().join(Path::new("applications")));
+    }
+    log::debug!("Got data dir: {:?}", app_dir);
+    app_dir.to_owned()
+}
+
+pub fn set_up_environment(catalog: Arc<Mutex<EntryCatalog>>) -> Daemon {
+    Daemon {
+        data_dir: get_data_dir(true).into(),
+        catalog,
+    }
 }

@@ -53,7 +53,6 @@ cat .vendor/config.toml >> .cargo/config
 install -Dm0755 target/release/desktop-entry-daemon %{buildroot}/%{_bindir}/desktop-entry-daemon
 install -Dm0644 profile/desktop-entry-daemon.sh %{buildroot}/%{_sysconfdir}/profile.d/desktop-entry-daemon.sh
 install -Dm0644 systemd/desktop-entry-daemon.service %{buildroot}/%{_userunitdir}/desktop-entry-daemon.service
-install -Dm0644 systemd/desktop-entry-daemon-clean.service %{buildroot}/%{_userunitdir}/desktop-entry-daemon-clean.service
 
 
 %if %{with check}
@@ -80,7 +79,6 @@ install -Dm0644 systemd/desktop-entry-daemon-clean.service %{buildroot}/%{_useru
 %doc README.md
 %{_bindir}/%{name}
 %{_userunitdir}/%{name}.service
-%{_userunitdir}/%{name}-clean.service
 %{_sysconfdir}/profile.d/%{name}.sh
 
 %changelog
