@@ -5,7 +5,7 @@ use std::{
     process::Command,
 };
 
-use zbus::names::{OwnedUniqueName, UniqueName};
+use zbus::names::OwnedUniqueName;
 
 #[derive(Clone, Debug)]
 pub struct EntryCatalog {
