@@ -4,7 +4,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::daemon::Daemon;
+use async_std::sync::{Arc, Mutex};
+
+use crate::{daemon::Daemon, types::EntryCatalog};
 
 pub fn get_data_dir(clean: bool) -> PathBuf {
     let home = env::var("HOME").expect("can't find home environment variable!");
@@ -23,12 +25,10 @@ pub fn get_data_dir(clean: bool) -> PathBuf {
     app_dir.to_owned()
 }
 
-pub fn set_up_environment() -> Daemon {
+pub fn set_up_environment(catalog: Arc<Mutex<EntryCatalog>>) -> Daemon {
     Daemon {
         data_dir: get_data_dir(true).into(),
-        entries: HashMap::new(),
-        icons: HashMap::new(),
-        change_handlers: HashSet::new(),
+        catalog,
     }
 }
 

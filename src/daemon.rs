@@ -3,6 +3,8 @@ use std::error::Error;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 
+use async_std::sync::Arc;
+use async_std::sync::Mutex;
 use std::fs::{self, create_dir_all};
 use zbus::interface;
 use zbus::message::Header;
@@ -10,13 +12,11 @@ use zbus::names::OwnedUniqueName;
 use zbus::object_server::SignalContext;
 
 use crate::desktop_entry::validate_desktop_entry;
-use crate::types::{DesktopEntry, IconEntry};
+use crate::types::{DesktopEntry, EntryCatalog, IconEntry};
 
 pub struct Daemon {
     pub data_dir: PathBuf,
-    pub entries: HashMap<OwnedUniqueName, DesktopEntry>,
-    pub icons: HashMap<OwnedUniqueName, IconEntry>,
-    pub change_handlers: HashSet<OwnedUniqueName>,
+    pub catalog: Arc<Mutex<EntryCatalog>>,
 }
 
 #[interface(name = "net.ryanabx.DesktopEntry")]
@@ -53,8 +53,10 @@ impl Daemon {
                             path: desktop_file_path.clone(),
                         };
                         let _ = Daemon::entry_changed(&ctxt, &new_entry.appid).await;
-                        self.entries
-                            .insert(OwnedUniqueName::from(sender.clone()), new_entry);
+                        self.catalog
+                            .lock()
+                            .await
+                            .add_desktop_entry(OwnedUniqueName::from(sender.clone()), new_entry);
                         Ok(())
                     }
                     Err(e) => {
@@ -138,8 +140,10 @@ impl Daemon {
                         icon_path: self.data_dir.join(Path::new(f_path)),
                     };
                     let _ = Daemon::icon_changed(&ctxt, &new_entry.icon_name).await;
-                    self.icons
-                        .insert(OwnedUniqueName::from(sender.clone()), new_entry);
+                    self.catalog
+                        .lock()
+                        .await
+                        .add_icon(OwnedUniqueName::from(sender.clone()), new_entry);
                     Ok(())
                 }
                 Err(e) => {
@@ -175,8 +179,10 @@ impl Daemon {
                             icon_path: self.data_dir.join(Path::new(f_path)),
                         };
                         let _ = Daemon::icon_changed(&ctxt, &new_entry.icon_name).await;
-                        self.icons
-                            .insert(OwnedUniqueName::from(sender.clone()), new_entry);
+                        self.catalog
+                            .lock()
+                            .await
+                            .add_icon(OwnedUniqueName::from(sender.clone()), new_entry);
                         Ok(())
                     }
                     Err(e) => {
@@ -223,7 +229,10 @@ impl Daemon {
     ) -> zbus::fdo::Result<()> {
         match hdr.sender() {
             Some(x) => {
-                self.change_handlers
+                self.catalog
+                    .lock()
+                    .await
+                    .change_handlers
                     .insert(OwnedUniqueName::from(x.clone()));
                 Ok(())
             }
