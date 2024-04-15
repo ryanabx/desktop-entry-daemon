@@ -2,6 +2,7 @@ use std::{
     collections::{HashMap, HashSet},
     fs::remove_file,
     path::PathBuf,
+    process::Command,
 };
 
 use zbus::names::{OwnedUniqueName, UniqueName};
@@ -26,6 +27,9 @@ impl EntryCatalog {
                 .insert(name.clone(), (Vec::new(), Vec::new()));
         }
         self.owned_resources.get_mut(&name).unwrap().0.push(entry);
+        if self.change_handlers.is_empty() {
+            let _ = Command::new("update-desktop-database").spawn();
+        }
     }
 
     pub fn add_icon(&mut self, name: OwnedUniqueName, entry: IconEntry) {
@@ -34,6 +38,9 @@ impl EntryCatalog {
                 .insert(name.clone(), (Vec::new(), Vec::new()));
         }
         self.owned_resources.get_mut(&name).unwrap().1.push(entry);
+        if self.change_handlers.is_empty() {
+            let _ = Command::new("update-desktop-database").spawn();
+        }
     }
 
     pub fn remove_owner(&mut self, name: OwnedUniqueName) {
@@ -49,6 +56,9 @@ impl EntryCatalog {
         }
 
         self.owned_resources.remove(&name);
+        if self.change_handlers.is_empty() {
+            let _ = Command::new("update-desktop-database").spawn();
+        }
         log::info!("Removed owner with name {:?}", name);
     }
 }
