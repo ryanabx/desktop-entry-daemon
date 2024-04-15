@@ -9,8 +9,8 @@ use zbus::names::OwnedUniqueName;
 
 #[derive(Clone, Debug)]
 pub struct EntryCatalog {
-    pub owned_resources: HashMap<OwnedUniqueName, (Vec<DesktopEntry>, Vec<IconEntry>)>,
-    pub change_handlers: HashSet<OwnedUniqueName>,
+    pub owned_resources: HashMap<u32, (Vec<DesktopEntry>, Vec<IconEntry>)>,
+    pub change_handlers: HashSet<u32>,
 }
 
 impl EntryCatalog {
@@ -21,7 +21,7 @@ impl EntryCatalog {
         }
     }
 
-    pub fn add_desktop_entry(&mut self, name: OwnedUniqueName, entry: DesktopEntry) {
+    pub fn add_desktop_entry(&mut self, name: u32, entry: DesktopEntry) {
         if !self.owned_resources.contains_key(&name) {
             self.owned_resources
                 .insert(name.clone(), (Vec::new(), Vec::new()));
@@ -32,7 +32,7 @@ impl EntryCatalog {
         }
     }
 
-    pub fn add_icon(&mut self, name: OwnedUniqueName, entry: IconEntry) {
+    pub fn add_icon(&mut self, name: u32, entry: IconEntry) {
         if !self.owned_resources.contains_key(&name) {
             self.owned_resources
                 .insert(name.clone(), (Vec::new(), Vec::new()));
@@ -43,7 +43,7 @@ impl EntryCatalog {
         }
     }
 
-    pub fn remove_owner(&mut self, name: OwnedUniqueName) {
+    pub fn remove_owner(&mut self, name: u32) {
         if !self.owned_resources.contains_key(&name) {
             return;
         }

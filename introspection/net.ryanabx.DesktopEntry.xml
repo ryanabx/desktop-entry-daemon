@@ -2,6 +2,11 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg type="s" direction="out"/>
+    </method>
+  </interface>
   <interface name="org.freedesktop.DBus.Properties">
     <method name="Get">
       <arg name="interface_name" type="s" direction="in"/>
@@ -33,20 +38,17 @@
       <arg type="s" direction="out"/>
     </method>
   </interface>
-  <interface name="org.freedesktop.DBus.Introspectable">
-    <method name="Introspect">
-      <arg type="s" direction="out"/>
-    </method>
-  </interface>
   <interface name="net.ryanabx.DesktopEntry">
     <!--
      Register a new application entry. The utf-8 encoded `entry` will be validated to be conformant with the
      [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
      Returns an error if the entry failed to register.
+     requires a valid process identifier to watch, entry goes away after the identified process exits
      -->
     <method name="RegisterEntry">
       <arg name="appid" type="s" direction="in"/>
       <arg name="entry" type="s" direction="in"/>
+      <arg name="pid" type="u" direction="in"/>
     </method>
     <!--
      Register a new application icon. The icon data should be valid .png or .svg data, and the icon type should be
@@ -56,6 +58,7 @@
     <method name="RegisterIcon">
       <arg name="name" type="s" direction="in"/>
       <arg name="data" type="ay" direction="in"/>
+      <arg name="pid" type="u" direction="in"/>
     </method>
     <!--
      signal for when an entry is added or destroyed. subscribe to this if you would like to manually
@@ -80,6 +83,7 @@
      `entry_changed`
      -->
     <method name="RegisterChangeHandler">
+      <arg name="pid" type="u" direction="in"/>
     </method>
   </interface>
 </node>

@@ -23,12 +23,14 @@ impl Daemon {
     /// Register a new application entry. The utf-8 encoded `entry` will be validated to be conformant with the
     /// [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
     /// Returns an error if the entry failed to register.
+    /// requires a valid process identifier to watch, entry goes away after the identified process exits
     async fn register_entry(
         &mut self,
         #[zbus(header)] hdr: Header<'_>,
         #[zbus(signal_context)] ctxt: SignalContext<'_>,
         appid: String,
         entry: String,
+        pid: u32,
     ) -> zbus::fdo::Result<()> {
         let Some(sender) = hdr.sender() else {
             return Err(zbus::fdo::Error::AuthFailed(
@@ -52,10 +54,7 @@ impl Daemon {
                             path: desktop_file_path.clone(),
                         };
                         let _ = Daemon::entry_changed(&ctxt, &new_entry.appid).await;
-                        self.catalog
-                            .lock()
-                            .await
-                            .add_desktop_entry(OwnedUniqueName::from(sender.clone()), new_entry);
+                        self.catalog.lock().await.add_desktop_entry(pid, new_entry);
                         Ok(())
                     }
                     Err(e) => {
@@ -84,6 +83,7 @@ impl Daemon {
         #[zbus(signal_context)] ctxt: SignalContext<'_>,
         name: String,
         data: &[u8],
+        pid: u32,
     ) -> zbus::fdo::Result<()> {
         let Some(sender) = hdr.sender() else {
             return Err(zbus::fdo::Error::AuthFailed(
@@ -139,10 +139,7 @@ impl Daemon {
                         icon_path: self.data_dir.join(Path::new(f_path)),
                     };
                     let _ = Daemon::icon_changed(&ctxt, &new_entry.icon_name).await;
-                    self.catalog
-                        .lock()
-                        .await
-                        .add_icon(OwnedUniqueName::from(sender.clone()), new_entry);
+                    self.catalog.lock().await.add_icon(pid, new_entry);
                     Ok(())
                 }
                 Err(e) => {
@@ -178,10 +175,7 @@ impl Daemon {
                             icon_path: self.data_dir.join(Path::new(f_path)),
                         };
                         let _ = Daemon::icon_changed(&ctxt, &new_entry.icon_name).await;
-                        self.catalog
-                            .lock()
-                            .await
-                            .add_icon(OwnedUniqueName::from(sender.clone()), new_entry);
+                        self.catalog.lock().await.add_icon(pid, new_entry);
                         Ok(())
                     }
                     Err(e) => {
@@ -222,23 +216,9 @@ impl Daemon {
     /// of desktop-entry-daemon refreshing the database whenever a new icon or entry is added or
     /// removed. along with this, if you'd like to watch changes, subscribe to `icon_changed` and
     /// `entry_changed`
-    async fn register_change_handler(
-        &mut self,
-        #[zbus(header)] hdr: Header<'_>,
-    ) -> zbus::fdo::Result<()> {
-        match hdr.sender() {
-            Some(x) => {
-                self.catalog
-                    .lock()
-                    .await
-                    .change_handlers
-                    .insert(OwnedUniqueName::from(x.clone()));
-                Ok(())
-            }
-            None => Err(zbus::fdo::Error::AuthFailed(
-                "Can't identify the client that requested this.".to_string(),
-            )),
-        }
+    async fn register_change_handler(&mut self, pid: u32) -> zbus::fdo::Result<()> {
+        self.catalog.lock().await.change_handlers.insert(pid);
+        Ok(())
     }
 }
 

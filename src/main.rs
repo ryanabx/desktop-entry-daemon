@@ -1,11 +1,13 @@
 use std::env;
 use std::fs::{create_dir, create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use async_std::sync::Arc;
 
 use async_std::stream::StreamExt;
 use async_std::sync::Mutex;
+use async_std::task;
 use daemon::Daemon;
 use zbus::fdo::{DBusProxy, NameOwnerChangedArgs};
 use zbus::names::OwnedUniqueName;
@@ -22,7 +24,7 @@ async fn main() -> ZbusResult<()> {
     env_logger::init();
     let catalog = Arc::new(Mutex::new(EntryCatalog::new()));
     let c = catalog.clone();
-    let _ = async_std::task::spawn(async { watch_name_owner_changed(c).await });
+    let _ = async_std::task::spawn(async { watch_proc(c).await });
     let c = catalog.clone();
     provide_desktop_entry_api(c).await?;
     Ok(())
@@ -48,39 +50,49 @@ async fn provide_desktop_entry_api(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::R
     }
 }
 
-async fn watch_name_owner_changed(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::Result<()> {
-    log::info!("Watching if name owner changes!");
-    let connection = Connection::system().await?;
-    // `Systemd1ManagerProxy` is generated from `Systemd1Manager` trait
-    let dbus_proxy = DBusProxy::new(&connection).await?;
-    // Method `receive_job_new` is generated from `job_new` signal
-    let mut name_owner_changed_stream = dbus_proxy.receive_name_owner_changed().await?;
-
-    while let Some(msg) = name_owner_changed_stream.next().await {
-        // struct `JobNewArgs` is generated from `job_new` signal function arguments
-        let args: NameOwnerChangedArgs = msg.args().expect("Error parsing message");
-
-        log::info!(
-            "NameOwnerChanged received: name={} old_owner={:?} new_owner={:?}",
-            args.name(),
-            args.old_owner(),
-            args.new_owner()
-        );
-
-        log::info!("{:?}", catalog.lock().await);
-        if args.new_owner().is_none() && args.old_owner().is_some() {
-            catalog.lock().await.remove_owner(OwnedUniqueName::from(
-                args.old_owner().as_ref().unwrap().clone(),
-            ));
+async fn watch_proc(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::Result<()> {
+    log::info!("Watching if processes exit!");
+    loop {
+        task::sleep(Duration::from_secs(10)).await;
+        // Check if processes have been destroyed
+        let mut catalog_lock = catalog.lock_arc().await;
+        let keys_to_iter = catalog_lock
+            .owned_resources
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+        for x in keys_to_iter {
+            if !Path::new(&format!("/proc/{}", x.clone())).exists() {
+                log::info!("Process {} has exited! Removing associated entries...", x);
+                catalog_lock.remove_owner(x);
+            }
+        }
+        let keys_to_iter = catalog_lock
+            .change_handlers
+            .iter()
+            .cloned()
+            .collect::<Vec<_>>();
+        for x in keys_to_iter {
+            if !Path::new(&format!("/proc/{}", x)).exists() {
+                log::info!(
+                    "Process {} has exited! Removing associated change handler...",
+                    x
+                );
+                catalog_lock.change_handlers.remove(&x);
+            }
         }
     }
-
-    panic!("Stream ended unexpectedly");
 }
 
 pub fn get_data_dir(clean: bool) -> PathBuf {
-    let home =
-        env::var("RUNTIME_DIRECTORY").expect("can't find XDG_RUNTIME_DIR environment variable!");
+    let home = match env::var("RUNTIME_DIRECTORY") {
+        Ok(h) => h,
+        Err(_) => {
+            log::error!("RUNTIME_DIRECTORY NOT FOUND. Make sure you're using the service!");
+            panic!()
+        }
+    };
+
     let app_dir = Path::new(&home);
     if !app_dir.exists() {
         log::warn!(

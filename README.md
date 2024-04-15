@@ -5,7 +5,7 @@ The desktop entries are cleaned after rebooting.
 
 ## DBus API
 
-Introspection XML can be found in the introspection/out folder: `net.ryanabx.DesktopEntry.xml`
+Introspection XML can be found in the introspection folder: `net.ryanabx.DesktopEntry.xml`
 
 ### Projects that use this dbus service
 
