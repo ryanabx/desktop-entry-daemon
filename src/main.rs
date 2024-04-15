@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{create_dir_all, remove_dir_all};
+use std::fs::{create_dir, create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
 
 use async_std::sync::Arc;
@@ -84,18 +84,26 @@ pub fn get_data_dir(clean: bool) -> PathBuf {
     let app_dir = Path::new(&home);
     if !app_dir.exists() {
         log::warn!(
-            "Runtime directory {} does not exist!",
+            "Runtime directory {} does not exist! Attempting to create directory manually...",
             app_dir.to_str().unwrap()
         );
+        match create_dir(app_dir) {
+            Ok(_) => {
+                log::info!("App directory created!");
+            }
+            Err(e) => {
+                log::error!("App directory could not be created. Reason: {}", e);
+                panic!("App directory could not be created");
+            }
+        }
     }
     if clean {
         // Clear old entries (won't error if it doesn't exist)
-        let _ = remove_dir_all(app_dir.join(Path::new("icons")));
         let _ = remove_dir_all(app_dir.join(Path::new("applications")));
-        // Create the desktop-entry-daemon directory
-        let _ = create_dir_all(app_dir.join(Path::new("icons")));
-        let _ = create_dir_all(app_dir.join(Path::new("applications")));
+        let _ = remove_dir_all(app_dir.join(Path::new("icons")));
     }
+    let _ = create_dir(app_dir.join(Path::new("applications")));
+    let _ = create_dir(app_dir.join(Path::new("icons")));
     log::debug!("Got data dir: {:?}", app_dir);
     app_dir.to_owned()
 }
