@@ -5,8 +5,6 @@ use std::{
     process::Command,
 };
 
-use zbus::names::OwnedUniqueName;
-
 #[derive(Clone, Debug)]
 pub struct EntryCatalog {
     pub owned_resources: HashMap<u32, (Vec<DesktopEntry>, Vec<IconEntry>)>,

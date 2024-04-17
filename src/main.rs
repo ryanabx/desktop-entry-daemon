@@ -1,16 +1,13 @@
 use std::env;
-use std::fs::{create_dir, create_dir_all, remove_dir_all};
+use std::fs::{create_dir, remove_dir_all};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use async_std::sync::Arc;
 
-use async_std::stream::StreamExt;
 use async_std::sync::Mutex;
 use async_std::task;
 use daemon::Daemon;
-use zbus::fdo::{DBusProxy, NameOwnerChangedArgs};
-use zbus::names::OwnedUniqueName;
 use zbus::{Connection, Result as ZbusResult};
 
 use crate::types::EntryCatalog;

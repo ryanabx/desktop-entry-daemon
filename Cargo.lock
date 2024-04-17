@@ -585,7 +585,6 @@ dependencies = [
  "image",
  "log",
  "svg",
- "tempfile",
  "xdg",
  "zbus",
 ]

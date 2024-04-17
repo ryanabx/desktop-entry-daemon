@@ -48,7 +48,6 @@
     <method name="RegisterEntry">
       <arg name="appid" type="s" direction="in"/>
       <arg name="entry" type="s" direction="in"/>
-      <arg name="pid" type="u" direction="in"/>
     </method>
     <!--
      Register a new application icon. The icon data should be valid .png or .svg data, and the icon type should be
@@ -58,7 +57,6 @@
     <method name="RegisterIcon">
       <arg name="name" type="s" direction="in"/>
       <arg name="data" type="ay" direction="in"/>
-      <arg name="pid" type="u" direction="in"/>
     </method>
     <!--
      signal for when an entry is added or destroyed. subscribe to this if you would like to manually

@@ -7,7 +7,6 @@ use async_std::sync::Mutex;
 use std::fs::{self, create_dir_all};
 use zbus::interface;
 use zbus::message::Header;
-use zbus::names::OwnedUniqueName;
 use zbus::object_server::SignalContext;
 
 use crate::desktop_entry::validate_desktop_entry;
@@ -30,8 +29,14 @@ impl Daemon {
         #[zbus(signal_context)] ctxt: SignalContext<'_>,
         appid: String,
         entry: String,
-        pid: u32,
     ) -> zbus::fdo::Result<()> {
+        let pid = ctxt
+            .connection()
+            .peer_credentials()
+            .await
+            .unwrap()
+            .process_id()
+            .unwrap();
         let Some(sender) = hdr.sender() else {
             return Err(zbus::fdo::Error::AuthFailed(
                 "Can't identify sender".to_string(),
@@ -83,8 +88,14 @@ impl Daemon {
         #[zbus(signal_context)] ctxt: SignalContext<'_>,
         name: String,
         data: &[u8],
-        pid: u32,
     ) -> zbus::fdo::Result<()> {
+        let pid = ctxt
+            .connection()
+            .peer_credentials()
+            .await
+            .unwrap()
+            .process_id()
+            .unwrap();
         let Some(sender) = hdr.sender() else {
             return Err(zbus::fdo::Error::AuthFailed(
                 "Can't identify sender".to_string(),
