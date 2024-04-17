@@ -5,9 +5,9 @@ use std::path::{Path, PathBuf};
 use async_std::sync::Arc;
 use async_std::sync::Mutex;
 use std::fs::{self, create_dir_all};
-use zbus::interface;
 use zbus::message::Header;
 use zbus::object_server::SignalContext;
+use zbus::{interface, Connection};
 
 use crate::desktop_entry::validate_desktop_entry;
 use crate::types::{DesktopEntry, EntryCatalog, IconEntry};
@@ -27,16 +27,19 @@ impl Daemon {
         &mut self,
         #[zbus(header)] hdr: Header<'_>,
         #[zbus(signal_context)] ctxt: SignalContext<'_>,
+        #[zbus(connection)] conn: &Connection,
         appid: String,
         entry: String,
     ) -> zbus::fdo::Result<()> {
-        let pid = ctxt
-            .connection()
-            .peer_credentials()
-            .await
-            .unwrap()
-            .process_id()
-            .unwrap();
+        let pid = conn.peer_credentials().await.unwrap().process_id().unwrap();
+
+        // let pid = ctxt
+        //     .connection()
+        //     .peer_credentials()
+        //     .await
+        //     .unwrap()
+        //     .process_id()
+        //     .unwrap();
         log::debug!("PID of client: {:?}", pid);
         log::debug!("Received entry for app id: {:?}", appid);
         match validate_desktop_entry(&entry, &appid) {
@@ -81,16 +84,19 @@ impl Daemon {
         &mut self,
         #[zbus(header)] hdr: Header<'_>,
         #[zbus(signal_context)] ctxt: SignalContext<'_>,
+        #[zbus(connection)] conn: &Connection,
         name: String,
         data: &[u8],
     ) -> zbus::fdo::Result<()> {
-        let pid = ctxt
-            .connection()
-            .peer_credentials()
-            .await
-            .unwrap()
-            .process_id()
-            .unwrap();
+        let pid = conn.peer_credentials().await.unwrap().process_id().unwrap();
+
+        // let pid = ctxt
+        //     .connection()
+        //     .peer_credentials()
+        //     .await
+        //     .unwrap()
+        //     .process_id()
+        //     .unwrap();
         log::debug!("PID of client: {:?}", pid);
         if let Ok(img) = image::io::Reader::new(std::io::Cursor::new(data))
             .with_guessed_format()
