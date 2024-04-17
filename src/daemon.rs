@@ -37,12 +37,7 @@ impl Daemon {
             .unwrap()
             .process_id()
             .unwrap();
-        let Some(sender) = hdr.sender() else {
-            return Err(zbus::fdo::Error::AuthFailed(
-                "Can't identify sender".to_string(),
-            ));
-        };
-        log::debug!("Sender: {:?}", sender);
+        log::debug!("PID of client: {:?}", pid);
         log::debug!("Received entry for app id: {:?}", appid);
         match validate_desktop_entry(&entry, &appid) {
             Ok(entry) => {
@@ -96,12 +91,7 @@ impl Daemon {
             .unwrap()
             .process_id()
             .unwrap();
-        let Some(sender) = hdr.sender() else {
-            return Err(zbus::fdo::Error::AuthFailed(
-                "Can't identify sender".to_string(),
-            ));
-        };
-        log::debug!("Sender: {:?}", sender);
+        log::debug!("PID of client: {:?}", pid);
         if let Ok(img) = image::io::Reader::new(std::io::Cursor::new(data))
             .with_guessed_format()
             .unwrap()
