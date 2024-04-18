@@ -7,6 +7,7 @@ use async_std::sync::Mutex;
 use std::fs::{self, create_dir_all};
 use zbus::fdo::DBusProxy;
 use zbus::message::Header;
+use zbus::names::BusName;
 use zbus::object_server::SignalContext;
 use zbus::proxy::CacheProperties;
 use zbus::{interface, proxy::Builder, Connection};
@@ -39,7 +40,7 @@ impl Daemon {
             .await
             .unwrap();
         let pid = dbus_proxy
-            .get_connection_credentials(hdr.destination().unwrap().to_owned())
+            .get_connection_credentials(BusName::Unique(hdr.sender().unwrap().to_owned()))
             .await
             .unwrap()
             .process_id()
@@ -98,7 +99,7 @@ impl Daemon {
             .await
             .unwrap();
         let pid = dbus_proxy
-            .get_connection_credentials(hdr.destination().unwrap().to_owned())
+            .get_connection_credentials(BusName::Unique(hdr.sender().unwrap().to_owned()))
             .await
             .unwrap()
             .process_id()
