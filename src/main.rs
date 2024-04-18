@@ -50,7 +50,7 @@ async fn provide_desktop_entry_api(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::R
 async fn watch_proc(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::Result<()> {
     log::info!("Watching if processes exit!");
     loop {
-        task::sleep(Duration::from_secs(10)).await;
+        task::sleep(Duration::from_secs(1)).await;
         // Check if processes have been destroyed
         let mut catalog_lock = catalog.lock_arc().await;
         let keys_to_iter = catalog_lock
