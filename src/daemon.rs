@@ -10,7 +10,7 @@ use zbus::message::Header;
 use zbus::names::BusName;
 use zbus::object_server::SignalContext;
 use zbus::proxy::CacheProperties;
-use zbus::{interface, proxy::Builder, Connection};
+use zbus::{interface, Connection};
 
 use crate::desktop_entry::validate_desktop_entry;
 use crate::types::{DesktopEntry, EntryCatalog, IconEntry};
@@ -29,8 +29,8 @@ impl Daemon {
     async fn register_entry(
         &mut self,
         #[zbus(header)] hdr: Header<'_>,
-        #[zbus(signal_context)] ctxt: SignalContext<'_>,
         #[zbus(connection)] conn: &Connection,
+        #[zbus(signal_context)] ctxt: SignalContext<'_>,
         appid: String,
         entry: String,
     ) -> zbus::fdo::Result<()> {
@@ -88,8 +88,8 @@ impl Daemon {
     async fn register_icon(
         &mut self,
         #[zbus(header)] hdr: Header<'_>,
-        #[zbus(signal_context)] ctxt: SignalContext<'_>,
         #[zbus(connection)] conn: &Connection,
+        #[zbus(signal_context)] ctxt: SignalContext<'_>,
         name: String,
         data: &[u8],
     ) -> zbus::fdo::Result<()> {
@@ -230,8 +230,23 @@ impl Daemon {
     /// of desktop-entry-daemon refreshing the database whenever a new icon or entry is added or
     /// removed. along with this, if you'd like to watch changes, subscribe to `icon_changed` and
     /// `entry_changed`
-    async fn register_change_handler(&mut self, pid: u32) -> zbus::fdo::Result<()> {
-        self.catalog.lock().await.change_handlers.insert(pid);
+    async fn register_change_handler(
+        &mut self,
+        #[zbus(header)] hdr: Header<'_>,
+        #[zbus(connection)] conn: &Connection,
+    ) -> zbus::fdo::Result<()> {
+        let dbus_proxy = DBusProxy::builder(conn)
+            .cache_properties(CacheProperties::No)
+            .build()
+            .await
+            .unwrap();
+        let pid = dbus_proxy
+            .get_connection_credentials(BusName::Unique(hdr.sender().unwrap().to_owned()))
+            .await
+            .unwrap()
+            .process_id()
+            .unwrap();
+        log::debug!("PID of client: {:?}", pid);
         Ok(())
     }
 }

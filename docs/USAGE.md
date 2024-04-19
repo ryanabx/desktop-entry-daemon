@@ -80,7 +80,5 @@ of desktop-entry-daemon refreshing the database whenever a new icon or entry is 
 removed. along with this, if you'd like to watch changes, subscribe to `icon_changed` and
 `entry_changed`
 -->
-<method name="RegisterChangeHandler">
-    <arg name="pid" type="u" direction="in"/>
-</method>
+<method name="RegisterChangeHandler"></method>
 ```
