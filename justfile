@@ -11,7 +11,7 @@ lib-dir := '/lib'
 daemon-src := 'target' / 'release' / name
 daemon-dst := base-dir / 'bin' / name
 
-data-src := 'profile' / 'desktop-entry-daemon.sh'
+data-src := 'profile.d' / 'desktop-entry-daemon.sh'
 data-dst := conf-dir / 'profile.d' / 'desktop-entry-daemon.sh'
 
 service-src := 'systemd' / 'desktop-entry-daemon.service'

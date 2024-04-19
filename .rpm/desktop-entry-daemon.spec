@@ -51,7 +51,7 @@ cat .vendor/config.toml >> .cargo/config
 
 %install
 install -Dm0755 target/release/desktop-entry-daemon %{buildroot}/%{_libexecdir}/desktop-entry-daemon
-install -Dm0644 profile/desktop-entry-daemon.sh %{buildroot}/%{_sysconfdir}/profile.d/desktop-entry-daemon.sh
+install -Dm0644 profile.d/desktop-entry-daemon.sh %{buildroot}/%{_sysconfdir}/profile.d/desktop-entry-daemon.sh
 install -Dm0644 systemd/desktop-entry-daemon.service %{buildroot}/%{_userunitdir}/desktop-entry-daemon.service
 
 
