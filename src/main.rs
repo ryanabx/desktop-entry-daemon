@@ -34,10 +34,10 @@ async fn provide_desktop_entry_api(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::R
     // setup the server
     connection
         .object_server()
-        .at("/net/ryanabx/DesktopEntry", daemon)
+        .at("/org/desktopintegration/DesktopEntry", daemon)
         .await?;
     // before requesting the name
-    connection.request_name("net.ryanabx.DesktopEntry").await?;
+    connection.request_name("org.desktopintegration.DesktopEntry").await?;
     log::info!("Running server connection and listening for calls");
 
     loop {

@@ -11,7 +11,7 @@ See [docs/USAGE.md](docs/USAGE.md) for usage information.
 
 Projects that use this D-Bus Service
 
-* [container-desktop-entries](https://github.com/ryanabx/container-desktop-entries) (Supports Toolbox, Docker, and Podman containers)
+* [container-desktop-entries](https://github.com/desktop-integration/container-desktop-entries) (Supports Toolbox, Docker, and Podman containers)
 * appimage-desktop-entries (maybe coming soon?)
 * your client here?
 

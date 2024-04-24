@@ -20,7 +20,7 @@ SourceLicense:  Apache-2.0
 License:        # FIXME
 # LICENSE.dependencies contains a full license breakdown
 
-URL:            https://github.com/ryanabx/desktop-entry-daemon
+URL:            https://github.com/desktop-integration/desktop-entry-daemon
 Source:         desktop-entry-daemon-%{ver}.tar.xz
 Source:         desktop-entry-daemon-%{ver}-vendor.tar.xz
 
