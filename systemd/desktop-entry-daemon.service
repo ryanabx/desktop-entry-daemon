@@ -3,7 +3,7 @@ Description=A daemon to manage temporary desktop entries
 Wants=desktop-entry-daemon-clean.service
 
 [Service]
-BusName=net.ryanabx.DesktopEntry
+BusName=org.desktopintegration.DesktopEntry
 Environment="RUST_LOG=debug"
 ExecStart=/usr/libexec/desktop-entry-daemon
 RuntimeDirectory=desktop-entry-daemon
@@ -14,4 +14,4 @@ Slice=session.slice
 WantedBy=graphical-session.target
 Before=graphical-session.target
 Before=cosmic-session.target
-Alias=dbus-net.ryanabx.DesktopEntry.service
+Alias=dbus-org.desktopintegration.DesktopEntry.service

@@ -20,7 +20,7 @@ pub struct Daemon {
     pub catalog: Arc<Mutex<EntryCatalog>>,
 }
 
-#[interface(name = "net.ryanabx.DesktopEntry")]
+#[interface(name = "org.desktopintegration.DesktopEntry")]
 impl Daemon {
     /// Register a new application entry. The utf-8 encoded `entry` will be validated to be conformant with the
     /// [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
