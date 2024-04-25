@@ -8,27 +8,28 @@ use async_std::sync::Arc;
 use async_std::sync::Mutex;
 use async_std::task;
 use daemon::Daemon;
+use entry_management::EntryManager;
 use zbus::{Connection, Result as ZbusResult};
 
-use crate::types::EntryCatalog;
+use crate::entry_management::Lifetime;
 
 mod daemon;
-mod desktop_entry;
-mod types;
+mod entry_management;
+mod tools;
 
 #[async_std::main]
 async fn main() -> ZbusResult<()> {
     env_logger::init();
-    let catalog = Arc::new(Mutex::new(EntryCatalog::new()));
-    let c = catalog.clone();
+    let manager = Arc::new(Mutex::new(EntryManager::new(get_data_dir(false))));
+    let c = manager.clone();
     let _ = async_std::task::spawn(async { watch_proc(c).await });
-    let c = catalog.clone();
+    let c = manager.clone();
     provide_desktop_entry_api(c).await?;
     Ok(())
 }
 
-async fn provide_desktop_entry_api(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::Result<()> {
-    let daemon = set_up_environment(catalog);
+async fn provide_desktop_entry_api(manager: Arc<Mutex<EntryManager>>) -> zbus::Result<()> {
+    let daemon = set_up_environment(manager);
     // start daemon
     let connection = Connection::session().await?;
     // setup the server
@@ -37,7 +38,9 @@ async fn provide_desktop_entry_api(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::R
         .at("/org/desktopintegration/DesktopEntry", daemon)
         .await?;
     // before requesting the name
-    connection.request_name("org.desktopintegration.DesktopEntry").await?;
+    connection
+        .request_name("org.desktopintegration.DesktopEntry")
+        .await?;
     log::info!("Running server connection and listening for calls");
 
     loop {
@@ -47,24 +50,35 @@ async fn provide_desktop_entry_api(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::R
     }
 }
 
-async fn watch_proc(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::Result<()> {
+async fn watch_proc(manager: Arc<Mutex<EntryManager>>) -> zbus::Result<()> {
     log::info!("Watching if processes exit!");
     loop {
         task::sleep(Duration::from_secs(1)).await;
         // Check if processes have been destroyed
-        let mut catalog_lock = catalog.lock_arc().await;
-        let keys_to_iter = catalog_lock
-            .owned_resources
+        let mut manager_lock = manager.lock_arc().await;
+        let keys_to_iter = manager_lock
+            .cache
+            .entries
             .keys()
             .cloned()
+            .chain(manager_lock.cache.icons.keys().cloned())
+            .filter_map(|x| {
+                if let Lifetime::Process(pid) = x {
+                    Some(pid)
+                } else {
+                    None
+                }
+            })
             .collect::<Vec<_>>();
         for x in keys_to_iter {
             if !Path::new(&format!("/proc/{}", x.clone())).exists() {
                 log::info!("Process {} has exited! Removing associated entries...", x);
-                catalog_lock.remove_owner(x);
+                if manager_lock.remove_lifetime(Lifetime::Process(x)).is_err() {
+                    log::error!("Something went wrong when removing lifetime with PID {}", x);
+                }
             }
         }
-        let keys_to_iter = catalog_lock
+        let keys_to_iter = manager_lock
             .change_handlers
             .iter()
             .cloned()
@@ -75,7 +89,7 @@ async fn watch_proc(catalog: Arc<Mutex<EntryCatalog>>) -> zbus::Result<()> {
                     "Process {} has exited! Removing associated change handler...",
                     x
                 );
-                catalog_lock.change_handlers.remove(&x);
+                manager_lock.change_handlers.remove(&x);
             }
         }
     }
@@ -117,9 +131,6 @@ pub fn get_data_dir(clean: bool) -> PathBuf {
     app_dir.to_owned()
 }
 
-pub fn set_up_environment(catalog: Arc<Mutex<EntryCatalog>>) -> Daemon {
-    Daemon {
-        data_dir: get_data_dir(false).into(),
-        catalog,
-    }
+pub fn set_up_environment(entry_manager: Arc<Mutex<EntryManager>>) -> Daemon {
+    Daemon { entry_manager }
 }
