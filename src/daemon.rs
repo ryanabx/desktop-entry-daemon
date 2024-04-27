@@ -190,6 +190,30 @@ impl Daemon {
             }
         }
     }
+
+    /// removes all entries and/or icons owned by `owner` for the session lifetime
+    async fn remove_session_owner(&mut self, owner: String) -> zbus::fdo::Result<()> {
+        let lifetime = Lifetime::Session(owner);
+        match self.entry_manager.lock().await.remove_lifetime(lifetime) {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                log::error!("{:?}", e);
+                Err(e.into())
+            }
+        }
+    }
+
+    /// removes all entries and/or icons owned by `owner` for the persistent lifetime
+    async fn remove_persistent_owner(&mut self, owner: String) -> zbus::fdo::Result<()> {
+        let lifetime = Lifetime::Persistent(owner);
+        match self.entry_manager.lock().await.remove_lifetime(lifetime) {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                log::error!("{:?}", e);
+                Err(e.into())
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
