@@ -38,11 +38,11 @@ fn app_exists(id: &str) -> bool {
 
 pub fn get_dirs() -> (PathBuf, PathBuf, PathBuf, PathBuf) {
     let home_str = env::var("HOME").unwrap();
-    let proc_dir_str = env::var("RUNTIME_DIRECTORY").unwrap_or(format!(
-        "/run/user/{}/desktop-entry-daemon/proc/",
+    let runtime_dir = env::var("RUNTIME_DIRECTORY").unwrap_or(format!(
+        "/run/user/{}/desktop-entry-daemon/",
         env::var("UID").unwrap_or("1000".to_string())
     ));
-    let proc_dir = Path::new(&proc_dir_str);
+    let proc_dir = &Path::new(&runtime_dir).join("process");
     if !proc_dir.exists() {
         log::warn!(
             "proc_dir {} does not exist! creating directory...",
@@ -53,11 +53,7 @@ pub fn get_dirs() -> (PathBuf, PathBuf, PathBuf, PathBuf) {
     let _ = fs::create_dir(proc_dir.join(Path::new("applications")));
     let _ = fs::create_dir(proc_dir.join(Path::new("icons")));
 
-    let session_dir_str = env::var("RUNTIME_DIRECTORY").unwrap_or(format!(
-        "/run/user/{}/desktop-entry-daemon/session/",
-        env::var("UID").unwrap_or("1000".to_string())
-    ));
-    let session_dir = Path::new(&session_dir_str);
+    let session_dir = &Path::new(&runtime_dir).join("session");
     if !session_dir.exists() {
         log::warn!(
             "session_dir {} does not exist! creating directory...",
