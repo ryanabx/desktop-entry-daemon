@@ -38,8 +38,8 @@ fn app_exists(id: &str) -> bool {
 
 pub fn get_dirs() -> (PathBuf, PathBuf, PathBuf) {
     let home_str = env::var("HOME").unwrap();
-    let runtime_dir_str = env::var("RUNTIME_DIR").unwrap_or(format!(
-        "/run/{}/desktop-entry-daemon/",
+    let runtime_dir_str = env::var("RUNTIME_DIRECTORY").unwrap_or(format!(
+        "/run/user/{}/desktop-entry-daemon/",
         env::var("UID").unwrap_or("1000".to_string())
     ));
     let tmp_dir = Path::new(&runtime_dir_str);
