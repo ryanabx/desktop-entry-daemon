@@ -7,6 +7,7 @@ use std::{
 };
 
 use image::{DynamicImage, ImageError};
+use ron::de::SpannedError;
 use serde::{Deserialize, Serialize};
 
 use crate::{daemon::ValidationError, tools::validate_desktop_entry};
@@ -17,6 +18,7 @@ pub enum EntryManagerError {
     EntryValidation(ValidationError),
     IconValidation(IconValidationError),
     PathCollision(PathBuf),
+    Ron(ron::Error),
 }
 
 #[derive(Debug)]
@@ -63,6 +65,12 @@ impl From<ImageError> for EntryManagerError {
     }
 }
 
+impl From<ron::Error> for EntryManagerError {
+    fn from(value: ron::Error) -> Self {
+        Self::Ron(value)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub enum Lifetime {
     Process(u32),
@@ -79,28 +87,63 @@ impl Lifetime {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EntryManager {
     pub cache: EntryCache,
-    pub entry_dir: PathBuf,
-    pub icon_dir: PathBuf,
+    pub temp_entry_dir: PathBuf,
+    pub temp_icon_dir: PathBuf,
+    pub persistent_entry_dir: PathBuf,
+    pub persistent_icon_dir: PathBuf,
+    pub config_file: PathBuf,
     pub change_handlers: HashSet<u32>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EntryCache {
     pub entries: HashMap<Lifetime, Vec<DesktopHandle>>,
     pub icons: HashMap<Lifetime, Vec<IconHandle>>,
 }
 
+pub enum ConfigError {
+    IO(std::io::Error),
+    Parse(SpannedError),
+}
+
+impl From<std::io::Error> for ConfigError {
+    fn from(value: std::io::Error) -> Self {
+        Self::IO(value)
+    }
+}
+
+impl From<SpannedError> for ConfigError {
+    fn from(value: SpannedError) -> Self {
+        Self::Parse(value)
+    }
+}
+
+impl EntryCache {
+    pub fn new(config_dir: &Path) -> Result<Self, ConfigError> {
+        let str_data = fs::read_to_string(config_dir)?;
+        let cache: Self = ron::from_str(&str_data)?;
+        Ok(cache)
+    }
+}
+
 impl EntryManager {
-    pub fn new(base_dir: PathBuf) -> Self {
-        Self {
-            cache: EntryCache {
-                entries: HashMap::new(),
-                icons: HashMap::new(),
-            },
-            entry_dir: base_dir.join(Path::new("applications")),
-            icon_dir: base_dir.join(Path::new("icons")),
+    pub fn new(tmp_dir: PathBuf, persistent_dir: PathBuf, config_file: PathBuf) -> Self {
+        let mut manager = Self {
+            cache: EntryCache::new(&config_file).unwrap_or_default(),
+            temp_entry_dir: tmp_dir.join(Path::new("applications")),
+            temp_icon_dir: tmp_dir.join(Path::new("icons")),
+            persistent_entry_dir: persistent_dir.join(Path::new("applications")),
+            persistent_icon_dir: persistent_dir.join(Path::new("icons")),
+            config_file,
             change_handlers: HashSet::new(),
+        };
+        if let Err(e) = manager.reset_session() {
+            log::warn!(
+                "there was a problem resetting the session lifetime: {:?}",
+                e
+            );
         }
+        manager
     }
     /// responsible for registering a desktop `entry` with a given `lifetime`. saves file as
     /// `appid`.desktop, and can be referred to with the specified appid
@@ -112,7 +155,10 @@ impl EntryManager {
     ) -> Result<(), EntryManagerError> {
         // validate entry
         let entry = validate_desktop_entry(entry, appid)?;
-        let desktop_file_path = self.entry_dir.as_path().join(format!("{}.desktop", appid));
+        let desktop_file_path = self
+            .temp_entry_dir
+            .as_path()
+            .join(format!("{}.desktop", appid));
         if desktop_file_path.exists() {
             return Err(EntryManagerError::PathCollision(desktop_file_path));
         }
@@ -193,7 +239,7 @@ impl EntryManager {
         } else {
             img.to_owned()
         };
-        let icon_path = self.icon_dir.join(Path::new(&format!(
+        let icon_path = self.temp_icon_dir.join(Path::new(&format!(
             "hicolor/{}x{}/apps/{}.png",
             img.width(),
             img.height(),
@@ -210,7 +256,7 @@ impl EntryManager {
     fn icon_as_svg(&self, svg_text: String, icon_name: &str) -> Result<PathBuf, EntryManagerError> {
         // check for valid svg
         svg::read(&svg_text)?;
-        let icon_path = self.icon_dir.join(Path::new(&format!(
+        let icon_path = self.temp_icon_dir.join(Path::new(&format!(
             "hicolor/scalable/apps/{}.svg",
             icon_name
         )));
@@ -223,6 +269,7 @@ impl EntryManager {
     }
 
     pub fn remove_lifetime(&mut self, lifetime: Lifetime) -> Result<(), EntryManagerError> {
+        log::info!("Deleting lifetime {:?}", lifetime);
         for entry in self.cache.entries.get(&lifetime).unwrap() {
             match entry.clone().delete_self() {
                 Ok(_) => {}
@@ -245,8 +292,15 @@ impl EntryManager {
         Ok(())
     }
 
+    pub fn reset_session(&mut self) -> Result<(), EntryManagerError> {
+        self.remove_lifetime(Lifetime::Session)?;
+        Ok(())
+    }
+
     fn save_cache(&self) -> Result<(), EntryManagerError> {
-        todo!()
+        let conf_str = ron::ser::to_string_pretty(&self.cache, ron::ser::PrettyConfig::default())?;
+        fs::write(&self.config_file, conf_str)?;
+        Ok(())
     }
 }
 

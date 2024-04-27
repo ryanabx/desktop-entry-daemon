@@ -1,17 +1,15 @@
-use std::env;
-use std::fs::{create_dir, remove_dir_all};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::Duration;
 
-use async_std::sync::Arc;
+use async_std::sync::{Arc, Mutex};
 
-use async_std::sync::Mutex;
 use async_std::task;
-use daemon::Daemon;
 use entry_management::EntryManager;
 use zbus::{Connection, Result as ZbusResult};
 
+use crate::daemon::Daemon;
 use crate::entry_management::Lifetime;
+use crate::tools::get_dirs;
 
 mod daemon;
 mod entry_management;
@@ -20,16 +18,23 @@ mod tools;
 #[async_std::main]
 async fn main() -> ZbusResult<()> {
     env_logger::init();
-    let manager = Arc::new(Mutex::new(EntryManager::new(get_data_dir(false))));
+    let (tmp_dir, persistent_dir, config_file) = get_dirs();
+    let manager = Arc::new(Mutex::new(EntryManager::new(
+        tmp_dir,
+        persistent_dir,
+        config_file,
+    )));
     let c = manager.clone();
-    let _ = async_std::task::spawn(async { watch_proc(c).await });
+    let _ = async_std::task::spawn(async { watch_processes(c).await });
     let c = manager.clone();
     provide_desktop_entry_api(c).await?;
     Ok(())
 }
 
 async fn provide_desktop_entry_api(manager: Arc<Mutex<EntryManager>>) -> zbus::Result<()> {
-    let daemon = set_up_environment(manager);
+    let daemon = Daemon {
+        entry_manager: manager,
+    };
     // start daemon
     let connection = Connection::session().await?;
     // setup the server
@@ -50,7 +55,7 @@ async fn provide_desktop_entry_api(manager: Arc<Mutex<EntryManager>>) -> zbus::R
     }
 }
 
-async fn watch_proc(manager: Arc<Mutex<EntryManager>>) -> zbus::Result<()> {
+async fn watch_processes(manager: Arc<Mutex<EntryManager>>) -> zbus::Result<()> {
     log::info!("Watching if processes exit!");
     loop {
         task::sleep(Duration::from_secs(1)).await;
@@ -93,44 +98,4 @@ async fn watch_proc(manager: Arc<Mutex<EntryManager>>) -> zbus::Result<()> {
             }
         }
     }
-}
-
-pub fn get_data_dir(clean: bool) -> PathBuf {
-    let home = match env::var("RUNTIME_DIRECTORY") {
-        Ok(h) => h,
-        Err(_) => {
-            log::error!("RUNTIME_DIRECTORY NOT FOUND. Make sure you're using the service!");
-            panic!()
-        }
-    };
-
-    let app_dir = Path::new(&home);
-    if !app_dir.exists() {
-        log::warn!(
-            "Runtime directory {} does not exist! Attempting to create directory manually...",
-            app_dir.to_str().unwrap()
-        );
-        match create_dir(app_dir) {
-            Ok(_) => {
-                log::info!("App directory created!");
-            }
-            Err(e) => {
-                log::error!("App directory could not be created. Reason: {}", e);
-                panic!("App directory could not be created");
-            }
-        }
-    }
-    if clean {
-        // Clear old entries (won't error if it doesn't exist)
-        let _ = remove_dir_all(app_dir.join(Path::new("applications")));
-        let _ = remove_dir_all(app_dir.join(Path::new("icons")));
-    }
-    let _ = create_dir(app_dir.join(Path::new("applications")));
-    let _ = create_dir(app_dir.join(Path::new("icons")));
-    log::debug!("Got data dir: {:?}", app_dir);
-    app_dir.to_owned()
-}
-
-pub fn set_up_environment(entry_manager: Arc<Mutex<EntryManager>>) -> Daemon {
-    Daemon { entry_manager }
 }
