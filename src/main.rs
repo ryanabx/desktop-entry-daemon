@@ -18,9 +18,10 @@ mod tools;
 #[async_std::main]
 async fn main() -> ZbusResult<()> {
     env_logger::init();
-    let (tmp_dir, persistent_dir, config_file) = get_dirs();
+    let (proc_dir, session_dir, persistent_dir, config_file) = get_dirs();
     let manager = Arc::new(Mutex::new(EntryManager::new(
-        tmp_dir,
+        proc_dir,
+        session_dir,
         persistent_dir,
         config_file,
     )));

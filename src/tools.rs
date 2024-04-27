@@ -36,22 +36,37 @@ fn app_exists(id: &str) -> bool {
     false
 }
 
-pub fn get_dirs() -> (PathBuf, PathBuf, PathBuf) {
+pub fn get_dirs() -> (PathBuf, PathBuf, PathBuf, PathBuf) {
     let home_str = env::var("HOME").unwrap();
-    let runtime_dir_str = env::var("RUNTIME_DIRECTORY").unwrap_or(format!(
-        "/run/user/{}/desktop-entry-daemon/",
+    let proc_dir_str = env::var("RUNTIME_DIRECTORY").unwrap_or(format!(
+        "/run/user/{}/desktop-entry-daemon/proc/",
         env::var("UID").unwrap_or("1000".to_string())
     ));
-    let tmp_dir = Path::new(&runtime_dir_str);
-    if !tmp_dir.exists() {
+    let proc_dir = Path::new(&proc_dir_str);
+    if !proc_dir.exists() {
         log::warn!(
-            "tmp_dir {} does not exist! creating directory...",
-            tmp_dir.to_str().unwrap()
+            "proc_dir {} does not exist! creating directory...",
+            proc_dir.to_str().unwrap()
         );
-        fs::create_dir(tmp_dir).unwrap();
+        fs::create_dir(proc_dir).unwrap();
     }
-    let _ = fs::create_dir(tmp_dir.join(Path::new("applications")));
-    let _ = fs::create_dir(tmp_dir.join(Path::new("icons")));
+    let _ = fs::create_dir(proc_dir.join(Path::new("applications")));
+    let _ = fs::create_dir(proc_dir.join(Path::new("icons")));
+
+    let session_dir_str = env::var("RUNTIME_DIRECTORY").unwrap_or(format!(
+        "/run/user/{}/desktop-entry-daemon/session/",
+        env::var("UID").unwrap_or("1000".to_string())
+    ));
+    let session_dir = Path::new(&session_dir_str);
+    if !session_dir.exists() {
+        log::warn!(
+            "session_dir {} does not exist! creating directory...",
+            session_dir.to_str().unwrap()
+        );
+        fs::create_dir(session_dir).unwrap();
+    }
+    let _ = fs::create_dir(session_dir.join(Path::new("applications")));
+    let _ = fs::create_dir(session_dir.join(Path::new("icons")));
 
     let persistent_dir_str = format!("{}/.cache/desktop-entry-daemon/", home_str);
     let persistent_dir = Path::new(&persistent_dir_str);
@@ -62,20 +77,22 @@ pub fn get_dirs() -> (PathBuf, PathBuf, PathBuf) {
         );
         fs::create_dir(persistent_dir).unwrap();
     }
-    let _ = fs::create_dir(tmp_dir.join(Path::new("applications")));
-    let _ = fs::create_dir(tmp_dir.join(Path::new("icons")));
+    let _ = fs::create_dir(proc_dir.join(Path::new("applications")));
+    let _ = fs::create_dir(proc_dir.join(Path::new("icons")));
 
     let config_file_str = format!("{}/.config/desktop-entry-daemon/cache.ron", home_str);
     let config_file = Path::new(&config_file_str);
     let _ = fs::create_dir(config_file.parent().unwrap());
     log::debug!(
-        "tmp_dir: {:?} | persistent_dir: {:?} | config_file: {:?}",
-        tmp_dir,
+        "proc_dir: {:?} | session_dir: {:?} | persistent_dir: {:?} | config_file: {:?}",
+        proc_dir,
+        session_dir,
         persistent_dir,
         config_file,
     );
     (
-        tmp_dir.to_owned(),
+        proc_dir.to_owned(),
+        session_dir.to_owned(),
         persistent_dir.to_owned(),
         config_file.to_owned(),
     )

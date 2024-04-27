@@ -87,10 +87,9 @@ impl Lifetime {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EntryManager {
     pub cache: EntryCache,
-    pub temp_entry_dir: PathBuf,
-    pub temp_icon_dir: PathBuf,
-    pub persistent_entry_dir: PathBuf,
-    pub persistent_icon_dir: PathBuf,
+    pub proc_dir: PathBuf,
+    pub session_dir: PathBuf,
+    pub persistent_dir: PathBuf,
     pub config_file: PathBuf,
     pub change_handlers: HashSet<u32>,
 }
@@ -99,6 +98,12 @@ pub struct EntryManager {
 pub struct EntryCache {
     pub entries: HashMap<Lifetime, Vec<DesktopHandle>>,
     pub icons: HashMap<Lifetime, Vec<IconHandle>>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ResourceType {
+    DesktopEntry,
+    Icon,
 }
 
 pub enum ConfigError {
@@ -127,13 +132,17 @@ impl EntryCache {
 }
 
 impl EntryManager {
-    pub fn new(tmp_dir: PathBuf, persistent_dir: PathBuf, config_file: PathBuf) -> Self {
+    pub fn new(
+        proc_dir: PathBuf,
+        session_dir: PathBuf,
+        persistent_dir: PathBuf,
+        config_file: PathBuf,
+    ) -> Self {
         let mut manager = Self {
             cache: EntryCache::new(&config_file).unwrap_or_default(),
-            temp_entry_dir: tmp_dir.join(Path::new("applications")),
-            temp_icon_dir: tmp_dir.join(Path::new("icons")),
-            persistent_entry_dir: persistent_dir.join(Path::new("applications")),
-            persistent_icon_dir: persistent_dir.join(Path::new("icons")),
+            proc_dir,
+            session_dir,
+            persistent_dir,
             config_file,
             change_handlers: HashSet::new(),
         };
@@ -144,6 +153,28 @@ impl EntryManager {
             );
         }
         manager
+    }
+    pub fn directory_for_lifetime(
+        &self,
+        lifetime: Lifetime,
+        resource_type: ResourceType,
+    ) -> PathBuf {
+        match (lifetime, resource_type) {
+            (Lifetime::Process(_), ResourceType::DesktopEntry) => {
+                self.proc_dir.join(Path::new("applications"))
+            }
+            (Lifetime::Process(_), ResourceType::Icon) => self.proc_dir.join(Path::new("icons")),
+            (Lifetime::Session(_), ResourceType::DesktopEntry) => {
+                self.session_dir.join(Path::new("applications"))
+            }
+            (Lifetime::Session(_), ResourceType::Icon) => self.session_dir.join(Path::new("icons")),
+            (Lifetime::Persistent(_), ResourceType::DesktopEntry) => {
+                self.persistent_dir.join(Path::new("applications"))
+            }
+            (Lifetime::Persistent(_), ResourceType::Icon) => {
+                self.persistent_dir.join(Path::new("icons"))
+            }
+        }
     }
     /// responsible for registering a desktop `entry` with a given `lifetime`. saves file as
     /// `appid`.desktop, and can be referred to with the specified appid
@@ -156,7 +187,7 @@ impl EntryManager {
         // validate entry
         let entry = validate_desktop_entry(entry, appid)?;
         let desktop_file_path = self
-            .temp_entry_dir
+            .directory_for_lifetime(lifetime.clone(), ResourceType::DesktopEntry)
             .as_path()
             .join(format!("{}.desktop", appid));
         if desktop_file_path.exists() {
@@ -196,10 +227,10 @@ impl EntryManager {
             .decode()
         {
             // image sent as bytes
-            self.icon_as_bytes(&img, icon_name)?
+            self.icon_as_bytes(&img, icon_name, lifetime.clone())?
         } else if let Ok(text_data) = String::from_utf8(icon_data.into()) {
             // image sent as svg
-            self.icon_as_svg(text_data, icon_name)?
+            self.icon_as_svg(text_data, icon_name, lifetime.clone())?
         } else {
             return Err(EntryManagerError::IconValidation(
                 IconValidationError::NoTypeFound,
@@ -225,6 +256,7 @@ impl EntryManager {
         &self,
         img: &DynamicImage,
         icon_name: &str,
+        lifetime: Lifetime,
     ) -> Result<PathBuf, EntryManagerError> {
         log::info!("{} is a valid image as bytes", icon_name);
         if img.width() != img.height() {
@@ -239,12 +271,14 @@ impl EntryManager {
         } else {
             img.to_owned()
         };
-        let icon_path = self.temp_icon_dir.join(Path::new(&format!(
-            "hicolor/{}x{}/apps/{}.png",
-            img.width(),
-            img.height(),
-            icon_name
-        )));
+        let icon_path = self
+            .directory_for_lifetime(lifetime, ResourceType::Icon)
+            .join(Path::new(&format!(
+                "hicolor/{}x{}/apps/{}.png",
+                img.width(),
+                img.height(),
+                icon_name
+            )));
         let _ = create_dir_all(icon_path.parent().unwrap());
         if icon_path.exists() {
             return Err(EntryManagerError::PathCollision(icon_path));
@@ -253,13 +287,20 @@ impl EntryManager {
         Ok(icon_path)
     }
 
-    fn icon_as_svg(&self, svg_text: String, icon_name: &str) -> Result<PathBuf, EntryManagerError> {
+    fn icon_as_svg(
+        &self,
+        svg_text: String,
+        icon_name: &str,
+        lifetime: Lifetime,
+    ) -> Result<PathBuf, EntryManagerError> {
         // check for valid svg
         svg::read(&svg_text)?;
-        let icon_path = self.temp_icon_dir.join(Path::new(&format!(
-            "hicolor/scalable/apps/{}.svg",
-            icon_name
-        )));
+        let icon_path = self
+            .directory_for_lifetime(lifetime, ResourceType::Icon)
+            .join(Path::new(&format!(
+                "hicolor/scalable/apps/{}.svg",
+                icon_name
+            )));
         let _ = create_dir_all(icon_path.parent().unwrap());
         if icon_path.exists() {
             return Err(EntryManagerError::PathCollision(icon_path));
