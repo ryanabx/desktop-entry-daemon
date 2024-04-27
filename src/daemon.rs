@@ -22,6 +22,7 @@ impl Into<zbus::fdo::Error> for EntryManagerError {
             Self::IO(e) => zbus::fdo::Error::IOError(e.to_string()),
             Self::IconValidation(e) => zbus::fdo::Error::InvalidArgs(e.to_string()),
             Self::PathCollision(p) => zbus::fdo::Error::FileExists(p.display().to_string()),
+            Self::Ron(r) => zbus::fdo::Error::IOError(r.to_string()),
         }
     }
 }

@@ -1,4 +1,7 @@
-use std::{fs, path::Path};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
 use freedesktop_desktop_entry::{default_paths, DesktopEntry, Iter};
 
@@ -31,4 +34,49 @@ fn app_exists(id: &str) -> bool {
         }
     }
     false
+}
+
+pub fn get_dirs() -> (PathBuf, PathBuf, PathBuf) {
+    let home_str = env::var("HOME").unwrap();
+    let runtime_dir_str = env::var("RUNTIME_DIR").unwrap_or(format!(
+        "/run/{}/desktop-entry-daemon/",
+        env::var("UID").unwrap_or("1000".to_string())
+    ));
+    let tmp_dir = Path::new(&runtime_dir_str);
+    if !tmp_dir.exists() {
+        log::warn!(
+            "tmp_dir {} does not exist! creating directory...",
+            tmp_dir.to_str().unwrap()
+        );
+        fs::create_dir(tmp_dir).unwrap();
+    }
+    let _ = fs::create_dir(tmp_dir.join(Path::new("applications")));
+    let _ = fs::create_dir(tmp_dir.join(Path::new("icons")));
+
+    let persistent_dir_str = format!("{}/.cache/desktop-entry-daemon/", home_str);
+    let persistent_dir = Path::new(&persistent_dir_str);
+    if !persistent_dir.exists() {
+        log::warn!(
+            "persistent_dir {} does not exist! creating directory...",
+            persistent_dir.to_str().unwrap()
+        );
+        fs::create_dir(persistent_dir).unwrap();
+    }
+    let _ = fs::create_dir(tmp_dir.join(Path::new("applications")));
+    let _ = fs::create_dir(tmp_dir.join(Path::new("icons")));
+
+    let config_file_str = format!("{}/.config/desktop-entry-daemon/cache.ron", home_str);
+    let config_file = Path::new(&config_file_str);
+    let _ = fs::create_dir(config_file.parent().unwrap());
+    log::debug!(
+        "tmp_dir: {:?} | persistent_dir: {:?} | config_file: {:?}",
+        tmp_dir,
+        persistent_dir,
+        config_file,
+    );
+    (
+        tmp_dir.to_owned(),
+        persistent_dir.to_owned(),
+        config_file.to_owned(),
+    )
 }
