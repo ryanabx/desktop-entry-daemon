@@ -81,6 +81,9 @@ async fn watch_processes(manager: Arc<Mutex<EntryManager>>) -> zbus::Result<()> 
                 if manager_lock.remove_lifetime(Lifetime::Process(x)).is_err() {
                     log::error!("Something went wrong when removing lifetime with PID {}", x);
                 }
+                if manager_lock.save_cache().is_err() {
+                    log::error!("Something went wrong when saving the cache to disk {}", x);
+                }
             }
         }
         let keys_to_iter = manager_lock

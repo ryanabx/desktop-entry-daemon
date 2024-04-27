@@ -194,8 +194,14 @@ impl Daemon {
     /// removes all entries and/or icons owned by `owner` for the session lifetime
     async fn remove_session_owner(&mut self, owner: String) -> zbus::fdo::Result<()> {
         let lifetime = Lifetime::Session(owner);
-        match self.entry_manager.lock().await.remove_lifetime(lifetime) {
-            Ok(_) => Ok(()),
+        let mut entry_lock = self.entry_manager.lock().await;
+        match entry_lock.remove_lifetime(lifetime) {
+            Ok(_) => {
+                if let Err(e) = entry_lock.save_cache() {
+                    return Err(e.into());
+                }
+                Ok(())
+            }
             Err(e) => {
                 log::error!("{:?}", e);
                 Err(e.into())
@@ -206,8 +212,14 @@ impl Daemon {
     /// removes all entries and/or icons owned by `owner` for the persistent lifetime
     async fn remove_persistent_owner(&mut self, owner: String) -> zbus::fdo::Result<()> {
         let lifetime = Lifetime::Persistent(owner);
-        match self.entry_manager.lock().await.remove_lifetime(lifetime) {
-            Ok(_) => Ok(()),
+        let mut entry_lock = self.entry_manager.lock().await;
+        match entry_lock.remove_lifetime(lifetime) {
+            Ok(_) => {
+                if let Err(e) = entry_lock.save_cache() {
+                    return Err(e.into());
+                }
+                Ok(())
+            }
             Err(e) => {
                 log::error!("{:?}", e);
                 Err(e.into())

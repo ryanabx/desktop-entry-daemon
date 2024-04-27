@@ -270,7 +270,6 @@ impl EntryManager {
 
     pub fn remove_lifetime(&mut self, lifetime: Lifetime) -> Result<(), EntryManagerError> {
         log::info!("Deleting lifetime {:?}", lifetime);
-        let mut changed = false;
         if let Some(entries) = self.cache.entries.get(&lifetime) {
             for entry in entries {
                 match entry.clone().delete_self() {
@@ -281,7 +280,6 @@ impl EntryManager {
                 }
             }
             self.cache.entries.remove(&lifetime);
-            changed = true;
         }
         if let Some(icons) = self.cache.icons.get(&lifetime) {
             for icon in icons {
@@ -293,10 +291,6 @@ impl EntryManager {
                 }
             }
             self.cache.icons.remove(&lifetime);
-            changed = true;
-        }
-        if changed {
-            self.save_cache()?;
         }
         Ok(())
     }
@@ -319,10 +313,11 @@ impl EntryManager {
         {
             self.remove_lifetime(lifetime.clone())?;
         }
+        self.save_cache()?;
         Ok(())
     }
 
-    fn save_cache(&self) -> Result<(), EntryManagerError> {
+    pub fn save_cache(&self) -> Result<(), EntryManagerError> {
         let conf_str = ron::ser::to_string_pretty(&self.cache, ron::ser::PrettyConfig::default())?;
         fs::write(&self.config_file, conf_str)?;
         Ok(())
