@@ -1,15 +1,10 @@
 ![Desktop Entry Daemon Banner](res/desktopentry.png)
-A D-Bus API and daemon to manage temporary desktop entries!
 
-The desktop entries and icons associated with a process are cleaned when the calling process exits!
-
-## Usage
-
-See [docs/USAGE.md](docs/USAGE.md) for usage information.
+**A D-Bus API and daemon to manage desktop entries!**
 
 ## Project Showcase
 
-Projects that use this D-Bus Service
+#### Projects that use this D-Bus Service:
 
 * [container-desktop-entries](https://github.com/ryanabx/container-desktop-entries) (Supports Toolbox, Docker, and Podman containers)
 * appimage-desktop-entries (maybe coming soon?)
@@ -27,8 +22,7 @@ just build
 
 ```bash
 just install
-systemctl --user enable desktop-entry-daemon
-systemctl --user start desktop-entry-daemon
+systemctl --user enable --now desktop-entry-daemon
 ```
 
 **UNINSTALL**
