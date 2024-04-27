@@ -73,8 +73,8 @@ pub fn get_dirs() -> (PathBuf, PathBuf, PathBuf, PathBuf) {
         );
         fs::create_dir(persistent_dir).unwrap();
     }
-    let _ = fs::create_dir(proc_dir.join(Path::new("applications")));
-    let _ = fs::create_dir(proc_dir.join(Path::new("icons")));
+    let _ = fs::create_dir(persistent_dir.join(Path::new("applications")));
+    let _ = fs::create_dir(persistent_dir.join(Path::new("icons")));
 
     let config_file_str = format!("{}/.config/desktop-entry-daemon/cache.ron", home_str);
     let config_file = Path::new(&config_file_str);
