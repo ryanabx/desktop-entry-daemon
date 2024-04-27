@@ -74,8 +74,8 @@ impl From<ron::Error> for EntryManagerError {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub enum Lifetime {
     Process(u32),
-    Session,
-    Persistent,
+    Session(String),
+    Persistent(String),
 }
 
 impl Lifetime {
@@ -270,30 +270,55 @@ impl EntryManager {
 
     pub fn remove_lifetime(&mut self, lifetime: Lifetime) -> Result<(), EntryManagerError> {
         log::info!("Deleting lifetime {:?}", lifetime);
-        for entry in self.cache.entries.get(&lifetime).unwrap() {
-            match entry.clone().delete_self() {
-                Ok(_) => {}
-                Err(e) => {
-                    log::error!("problem deleting entry {:?} : {:?}", entry.appid, e);
+        let mut changed = false;
+        if let Some(entries) = self.cache.entries.get(&lifetime) {
+            for entry in entries {
+                match entry.clone().delete_self() {
+                    Ok(_) => {}
+                    Err(e) => {
+                        log::error!("problem deleting entry {:?} : {:?}", entry.appid, e);
+                    }
                 }
             }
+            self.cache.entries.remove(&lifetime);
+            changed = true;
         }
-        self.cache.entries.remove(&lifetime);
-        for icon in self.cache.icons.get(&lifetime).unwrap() {
-            match icon.clone().delete_self() {
-                Ok(_) => {}
-                Err(e) => {
-                    log::error!("problem deleting icon {:?} : {:?}", icon.icon_name, e);
+        if let Some(icons) = self.cache.icons.get(&lifetime) {
+            for icon in icons {
+                match icon.clone().delete_self() {
+                    Ok(_) => {}
+                    Err(e) => {
+                        log::error!("problem deleting icon {:?} : {:?}", icon.icon_name, e);
+                    }
                 }
             }
+            self.cache.icons.remove(&lifetime);
+            changed = true;
         }
-        self.cache.icons.remove(&lifetime);
-        self.save_cache()?;
+        if changed {
+            self.save_cache()?;
+        }
         Ok(())
     }
 
     pub fn reset_session(&mut self) -> Result<(), EntryManagerError> {
-        self.remove_lifetime(Lifetime::Session)?;
+        for lifetime in self
+            .cache
+            .entries
+            .clone()
+            .iter()
+            .map(|x| x.0)
+            .chain(self.cache.icons.clone().iter().map(|x| x.0))
+            .filter_map(|x| {
+                if matches!(x, Lifetime::Session(_)) {
+                    Some(x.clone())
+                } else {
+                    None
+                }
+            })
+        {
+            self.remove_lifetime(lifetime.clone())?;
+        }
         Ok(())
     }
 

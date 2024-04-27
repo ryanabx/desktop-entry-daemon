@@ -65,9 +65,14 @@ impl Daemon {
     }
 
     /// register a new desktop entry with the session's lifetime
-    async fn new_session_entry(&mut self, appid: String, entry: String) -> zbus::fdo::Result<()> {
-        log::debug!("appid: {:?}, session", appid);
-        let lifetime = Lifetime::Session;
+    async fn new_session_entry(
+        &mut self,
+        appid: String,
+        entry: String,
+        owner: String,
+    ) -> zbus::fdo::Result<()> {
+        log::debug!("appid: {:?}, session, owner: {}", appid, owner);
+        let lifetime = Lifetime::Session(owner);
         match self
             .entry_manager
             .lock()
@@ -87,9 +92,10 @@ impl Daemon {
         &mut self,
         appid: String,
         entry: String,
+        owner: String,
     ) -> zbus::fdo::Result<()> {
-        log::debug!("appid: {:?}, persistent", appid);
-        let lifetime = Lifetime::Persistent;
+        log::debug!("appid: {:?}, persistent, owner: {}", appid, owner);
+        let lifetime = Lifetime::Persistent(owner);
         match self
             .entry_manager
             .lock()
@@ -140,9 +146,14 @@ impl Daemon {
     }
 
     /// register a new icon entry with the session's lifetime
-    async fn new_session_icon(&mut self, name: String, data: &[u8]) -> zbus::fdo::Result<()> {
-        log::debug!("icon: {:?}, session", name);
-        let lifetime = Lifetime::Session;
+    async fn new_session_icon(
+        &mut self,
+        name: String,
+        data: &[u8],
+        owner: String,
+    ) -> zbus::fdo::Result<()> {
+        log::debug!("icon: {:?}, session, owner: {}", name, owner);
+        let lifetime = Lifetime::Session(owner);
         match self
             .entry_manager
             .lock()
@@ -158,9 +169,14 @@ impl Daemon {
     }
 
     /// register a new persistent icon entry
-    async fn new_persistent_icon(&mut self, name: String, data: &[u8]) -> zbus::fdo::Result<()> {
-        log::debug!("icon: {:?}, persistent", name);
-        let lifetime = Lifetime::Persistent;
+    async fn new_persistent_icon(
+        &mut self,
+        name: String,
+        data: &[u8],
+        owner: String,
+    ) -> zbus::fdo::Result<()> {
+        log::debug!("icon: {:?}, persistent, owner: {}", name, owner);
+        let lifetime = Lifetime::Persistent(owner);
         match self
             .entry_manager
             .lock()
