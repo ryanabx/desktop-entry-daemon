@@ -1,6 +1,10 @@
 ![Desktop Entry Daemon Banner](res/desktopentry.png)
 
-**A D-Bus API and daemon to manage desktop entries!**
+**A D-Bus API and daemon to manage desktop entries and icons! Choose from 3 different lifetimes for your data and entries will be managed automatically!**
+
+## Documentation
+
+See: [the documentation](https://ryanabx.github.io/desktop-entry-daemon/) for how to use and contribute to this API!
 
 ## Project Showcase
 
@@ -36,4 +40,3 @@ just uninstall
 ## Contributing
 
 Make a PR! It'd be helpful to make an issue as well to let people know what you intend to work on!
-

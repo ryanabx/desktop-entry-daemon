@@ -3,33 +3,48 @@ title: Home
 layout: home
 ---
 
-This is a *bare-minimum* template to create a Jekyll site that uses the [Just the Docs] theme. You can easily set the created site to be published on [GitHub Pages] – the [README] file explains how to do that, along with other details.
+# Desktop Entry Daemon
 
-If [Jekyll] is installed on your computer, you can also build and preview the created site *locally*. This lets you test changes before committing them, and avoids waiting for GitHub Pages.[^1] And you will be able to deploy your local build to a different platform than GitHub Pages.
+Desktop Entry Daemon is a userspace DBus API and daemon to manage desktop entries. This could be expanded later to include a system-level component, but the current scope is just for userspace applications.
 
-More specifically, the created site:
+The current resources a client may register with `desktop-entry-daemon`:
 
-- uses a gem-based approach, i.e. uses a `Gemfile` and loads the `just-the-docs` gem
-- uses the [GitHub Pages / Actions workflow] to build and publish the site on GitHub Pages
+* Desktop Entries with the [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html)
+* Icons with the [Icon Theme Specification](https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html)
 
-Other than that, you're free to customize sites that you create with this template, however you like. You can easily change the versions of `just-the-docs` and Jekyll it uses, as well as adding further plugins.
 
-[Browse our documentation][Just the Docs] to learn more about how to use this theme.
+## Lifetimes
 
-To get started with creating a site, simply:
+There are 3 lifetimes for a resource in `desktop-entry-daemon`:
 
-1. click "[use this template]" to create a GitHub repository
-2. go to Settings > Pages > Build and deployment > Source, and select GitHub Actions
+* **Process** - Resources in this lifetime will be cleared when the calling process exits
+* **Session** - Resources in this lifetime will be cleared when the session is restarted OR when the daemon restarts
+* **Persistent** - Resources in this lifetime are persistent across reboots and won't be deleted unless explicitly called to do so.
 
-If you want to maintain your docs in the `docs` directory of an existing project repo, see [Hosting your docs from an existing project repo](https://github.com/just-the-docs/just-the-docs-template/blob/main/README.md#hosting-your-docs-from-an-existing-project-repo) in the template README.
+The default directories for these lifetimes are:
 
-----
+* **Process** - `/run/user/$UID/desktop-entry-daemon/process/`
+* **Session** - `/run/user/$UID/desktop-entry-daemon/session/`
+* **Persistent** - `$HOME/.cache/desktop-entry-daemon/`
 
-[^1]: [It can take up to 10 minutes for changes to your site to publish after you push the changes to GitHub](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/creating-a-github-pages-site-with-jekyll#creating-your-site).
+## Using the DBus API
 
-[Just the Docs]: https://just-the-docs.github.io/just-the-docs/
-[GitHub Pages]: https://docs.github.com/en/pages
-[README]: https://github.com/just-the-docs/just-the-docs-template/blob/main/README.md
-[Jekyll]: https://jekyllrb.com
-[GitHub Pages / Actions workflow]: https://github.blog/changelog/2022-07-27-github-pages-custom-github-actions-workflows-beta/
-[use this template]: https://github.com/just-the-docs/just-the-docs-template/generate
+The up-to-date XML interface for the API can be found [here](https://github.com/ryanabx/desktop-entry-daemon/blob/master/res/org.desktopintegration.DesktopEntry.xml).
+
+The DBus interface can be found at the name `org.desktopintegration.DesktopEntry` at the path `/org/desktopintegration/DesktopEntry`.
+
+### Example 1 - Entry/Icon for the Process Lifetime
+
+Let's say you are a client and you'd like to register a temporary desktop entry and icon for yourself while you're running. In this case, you'd want to use the `Process` lifetime, so that when your application exits, the entry is removed.
+
+Call the DBus API function `NewProcessEntry` with a string for your application ID `appid` and the plain text of the desktop entry `entry`. The daemon will track the calling process until the process exits, and then delete the entry. You may also call the function `NewProcessIcon` to register an icon with the name `name` and the raw data for the icon `data`.
+
+### Example 2 - Registering an SVG Icon
+
+Lets say you'd like to register a scalable icon for an app or other purpose. Let's say you'd like the icon to be cleared after the session exits, so you'd use the `Session` lifetime. Call `NewSessionIcon` with a `name` of your choice and some SVG text data encoded into [UTF-8](https://en.wikipedia.org/wiki/UTF-8).
+
+> **NOTE:** Session-level and Persistent-level resources have an extra argument `owner` which is a string of your choice that identifies that you own the resource. You may use this string later on if you'd like to force-remove the data you've stored.
+
+## Contributing
+
+This API is open and welcome to community contributions! Please [make an issue](https://github.com/ryanabx/desktop-entry-daemon/issues/new) describing what you'd like to work on, to avoid duplicate work, then make a PR!
