@@ -2,11 +2,6 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
-  <interface name="org.freedesktop.DBus.Introspectable">
-    <method name="Introspect">
-      <arg type="s" direction="out"/>
-    </method>
-  </interface>
   <interface name="org.freedesktop.DBus.Properties">
     <method name="Get">
       <arg name="interface_name" type="s" direction="in"/>
@@ -40,47 +35,68 @@
   </interface>
   <interface name="org.desktopintegration.DesktopEntry">
     <!--
-     Register a new application entry. The utf-8 encoded `entry` will be validated to be conformant with the
-     [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
-     Returns an error if the entry failed to register.
-     requires a valid process identifier to watch, entry goes away after the identified process exits
+     register a new desktop entry with the calling process' lifetime
      -->
-    <method name="RegisterEntry">
+    <method name="NewProcessEntry">
       <arg name="appid" type="s" direction="in"/>
       <arg name="entry" type="s" direction="in"/>
     </method>
     <!--
-     Register a new application icon. The icon data should be valid .png or .svg data, and the icon type should be
-     0 for .png, 1 for .svg. The icon name is the name desktop entries reference when using the icon. The method will
-     returns true if successful, false otherwise.
+     register a new desktop entry with the session's lifetime
      -->
-    <method name="RegisterIcon">
+    <method name="NewSessionEntry">
+      <arg name="appid" type="s" direction="in"/>
+      <arg name="entry" type="s" direction="in"/>
+      <arg name="owner" type="s" direction="in"/>
+    </method>
+    <!--
+     register a new persistent desktop entry
+     -->
+    <method name="NewPersistentEntry">
+      <arg name="appid" type="s" direction="in"/>
+      <arg name="entry" type="s" direction="in"/>
+      <arg name="owner" type="s" direction="in"/>
+    </method>
+    <!--
+     register a new icon entry with the calling process' lifetime
+     -->
+    <method name="NewProcessIcon">
       <arg name="name" type="s" direction="in"/>
       <arg name="data" type="ay" direction="in"/>
     </method>
     <!--
-     signal for when an entry is added or destroyed. subscribe to this if you would like to manually
-     handle refreshing the xdg desktop database, i.e. by using `update-desktop-database`
-     this is normally handled automatically by desktop-entry-daemon
+     register a new icon entry with the session's lifetime
      -->
-    <signal name="EntryChanged">
-      <arg name="appid" type="s"/>
-    </signal>
+    <method name="NewSessionIcon">
+      <arg name="name" type="s" direction="in"/>
+      <arg name="data" type="ay" direction="in"/>
+      <arg name="owner" type="s" direction="in"/>
+    </method>
     <!--
-     signal for when an icon is added or destroyed. subscribe to this if you would like to manually
-     handle refreshing the xdg desktop database, i.e. by using `update-desktop-database`
-     this is normally handled automatically by desktop-entry-daemon
+     register a new persistent icon entry
      -->
-    <signal name="IconChanged">
-      <arg name="icon_name" type="s"/>
-    </signal>
+    <method name="NewPersistentIcon">
+      <arg name="name" type="s" direction="in"/>
+      <arg name="data" type="ay" direction="in"/>
+      <arg name="owner" type="s" direction="in"/>
+    </method>
     <!--
-     register the sender as a change handler for icons and entries. this inhibits the behavior
-     of desktop-entry-daemon refreshing the database whenever a new icon or entry is added or
-     removed. along with this, if you'd like to watch changes, subscribe to `icon_changed` and
-     `entry_changed`
+     removes all entries and/or icons owned by `owner` for the session lifetime
      -->
-    <method name="RegisterChangeHandler"></method>
+    <method name="RemoveSessionOwner">
+      <arg name="owner" type="s" direction="in"/>
+    </method>
+    <!--
+     removes all entries and/or icons owned by `owner` for the persistent lifetime
+     -->
+    <method name="RemovePersistentOwner">
+      <arg name="owner" type="s" direction="in"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg type="s" direction="out"/>
+    </method>
   </interface>
 </node>
 
