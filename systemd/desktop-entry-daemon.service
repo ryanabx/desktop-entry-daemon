@@ -1,6 +1,6 @@
 [Unit]
 Description=A daemon to manage temporary desktop entries
-Wants=desktop-entry-daemon-clean.service
+After=graphical-session.target
 
 [Service]
 BusName=org.desktopintegration.DesktopEntry
@@ -9,9 +9,3 @@ ExecStart=/usr/libexec/desktop-entry-daemon
 RuntimeDirectory=desktop-entry-daemon
 Type=dbus
 Slice=session.slice
-
-[Install]
-WantedBy=graphical-session.target
-Before=graphical-session.target
-Before=cosmic-session.target
-Alias=dbus-org.desktopintegration.DesktopEntry.service
