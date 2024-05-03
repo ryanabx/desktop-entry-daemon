@@ -5,7 +5,7 @@
 %global cargo_install_lib 0
 
 Name:           desktop-entry-daemon
-Version:        v0.1.0-alpha.3
+Version:        v0.1.0~alpha.3
 Release:        %autorelease
 Summary:        A DBus service to manage freedesktop desktop entries
 
@@ -30,7 +30,7 @@ License:        0BSD OR MIT OR Apache-2.0 AND Apache-2.0 AND Apache-2.0 OR MIT A
 # LICENSE.dependencies contains a full license breakdown
 
 URL:            https://github.com/ryanabx/desktop-entry-daemon
-Source:         https://github.com/ryanabx/desktop-entry-daemon/archive/refs/tags/%{version}.tar.gz
+Source:         https://github.com/ryanabx/desktop-entry-daemon/archive/refs/tags/v0.1.0-alpha.3.tar.gz
 
 BuildRequires:  cargo-rpm-macros >= 26
 
