@@ -40,7 +40,7 @@ BuildRequires:  cargo-rpm-macros >= 26
 %description %{_description}
 
 %prep
-%autosetup -n %{crate}-%{version} -p1
+%autosetup -n desktop-entry-daemon-0.1.0-alpha.4 -p1
 %cargo_prep
 
 %generate_buildrequires
