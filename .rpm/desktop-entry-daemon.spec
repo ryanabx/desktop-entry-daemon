@@ -11,7 +11,7 @@
 %global date ###
 
 Name:           desktop-entry-daemon
-Version:        %{ver}~%{date}
+Version:        %{ver}~git%{date}.%{sub %{commit} 1 7}
 Release:        %autorelease
 Summary:        A daemon for managing temporary desktop entries
 
@@ -36,8 +36,8 @@ License:        0BSD OR MIT OR Apache-2.0 AND Apache-2.0 AND Apache-2.0 OR MIT A
 # LICENSE.dependencies contains a full license breakdown
 
 URL:            https://github.com/ryanabx/desktop-entry-daemon
-Source:         desktop-entry-daemon-%{ver}.tar.xz
-Source:         desktop-entry-daemon-%{ver}-vendor.tar.xz
+Source:         desktop-entry-daemon-%{commit}.tar.xz
+Source:         desktop-entry-daemon-%{commit}-vendor.tar.xz
 
 BuildRequires:  cargo-rpm-macros >= 26
 BuildRequires:  rustc
@@ -54,7 +54,7 @@ Requires:       dbus
 %description %{_description}
 
 %prep
-%autosetup -n %{crate}-%{ver} -p1 -a1
+%autosetup -n %{name}-%{commit} -p1 -a1
 %cargo_prep -N
 cat .vendor/config.toml >> .cargo/config
 
