@@ -1,6 +1,7 @@
 [Unit]
 Description=A daemon to manage temporary desktop entries
 After=graphical-session.target
+WantedBy=graphical-session.target
 
 [Service]
 BusName=org.desktopintegration.DesktopEntry
