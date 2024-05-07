@@ -27,7 +27,7 @@ impl Into<zbus::fdo::Error> for EntryManagerError {
     }
 }
 
-#[interface(name = "org.desktopintegration.DesktopEntry")]
+#[interface(name = "io.ryanabx.DesktopEntry")]
 impl Daemon {
     /// register a new desktop entry with the calling process' lifetime
     async fn new_process_entry(

@@ -29,9 +29,9 @@ The default directories for these lifetimes are:
 
 ## Using the DBus API
 
-The up-to-date XML interface for the API can be found [here](https://github.com/ryanabx/desktop-entry-daemon/blob/master/res/org.desktopintegration.DesktopEntry.xml).
+The up-to-date XML interface for the API can be found [here](https://github.com/ryanabx/desktop-entry-daemon/blob/master/res/io.ryanabx.DesktopEntry.xml).
 
-The DBus interface can be found at the name `org.desktopintegration.DesktopEntry` at the path `/org/desktopintegration/DesktopEntry`.
+The DBus interface can be found at the name `io.ryanabx.DesktopEntry` at the path `/io/ryanabx/DesktopEntry`.
 
 ### Example 1 - Entry/Icon for the Process Lifetime
 

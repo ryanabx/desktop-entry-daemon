@@ -33,7 +33,7 @@
       <arg type="s" direction="out"/>
     </method>
   </interface>
-  <interface name="org.desktopintegration.DesktopEntry">
+  <interface name="io.ryanabx.DesktopEntry">
     <!--
      register a new desktop entry with the calling process' lifetime
      -->

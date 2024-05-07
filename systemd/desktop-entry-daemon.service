@@ -4,9 +4,11 @@ After=graphical-session.target
 WantedBy=graphical-session.target
 
 [Service]
-BusName=org.desktopintegration.DesktopEntry
+Type=dbus
+BusName=io.ryanabx.DesktopEntry
 Environment="RUST_LOG=debug"
 ExecStart=/usr/libexec/desktop-entry-daemon
 RuntimeDirectory=desktop-entry-daemon
-Type=dbus
-Slice=session.slice
+
+[Install]
+WantedBy=graphical-session.target
