@@ -15,7 +15,7 @@ Version:        %{ver}~git%{date}.%{sub %{commit} 1 7}
 Release:        %autorelease
 Summary:        A daemon for managing temporary desktop entries
 
-SourceLicense:  Apache-2.0
+SourceLicense:  MIT
 # 0BSD OR MIT OR Apache-2.0
 # Apache-2.0
 # Apache-2.0 OR MIT
