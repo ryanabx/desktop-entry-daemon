@@ -1,8 +1,3 @@
----
-title: Home
-layout: home
----
-
 # Desktop Entry Daemon
 
 Desktop Entry Daemon is a userspace DBus API and daemon to manage desktop entries. This could be expanded later to include a system-level component, but the current scope is just for userspace applications.
