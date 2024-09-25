@@ -21,4 +21,4 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
     - name: Test install
-      run: sudo apt-get install -y just && just build && just install
+      run: cargo install just && just build && just install
