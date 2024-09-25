@@ -44,9 +44,7 @@ async fn provide_desktop_entry_api(manager: Arc<Mutex<EntryManager>>) -> zbus::R
         .at("/io/ryanabx/DesktopEntry", daemon)
         .await?;
     // before requesting the name
-    connection
-        .request_name("io.ryanabx.DesktopEntry")
-        .await?;
+    connection.request_name("io.ryanabx.DesktopEntry").await?;
     log::info!("Running server connection and listening for calls");
 
     loop {
