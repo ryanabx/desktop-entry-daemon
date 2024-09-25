@@ -21,4 +21,4 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
     - name: Test install
-      run: cargo install just && just build && sudo just install
+      run: sudo cargo install just && sudo just build && sudo just install
